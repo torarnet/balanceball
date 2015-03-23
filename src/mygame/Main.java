@@ -6,6 +6,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
+import com.jme3.system.AppSettings;
 
 /**
  * test
@@ -21,6 +22,10 @@ public class Main extends SimpleApplication {
     
     public static void main(String[] args) {
         Main app = new Main();
+        AppSettings setting= new AppSettings(true);
+        setting.setTitle("Pirates");
+        setting.setSettingsDialogImage("Interface/piratelogo.jpg");
+        app.setSettings(setting);
         app.start();
     }
 
