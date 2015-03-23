@@ -27,8 +27,11 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 
 /**
- *
- * @author Tor Arne
+ * Skeleton class for demonstrating how to use picking in JME.
+ * Here there are two objects on a surface which can be moved
+ * independent of each other.
+ * 
+ * @author Tor Arne using IFE Examples
  */
 public class PickingSkel extends SimpleApplication implements ActionListener, AnalogListener {
 
@@ -42,8 +45,6 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
     Spatial pickedObject = null;
     float objOffsetY = 0.0f;
     Node pickables;
-    //Geometry box;
-    //Geometry floor;
     
     public static void main (String[] args) {
         PickingSkel app = new PickingSkel();
@@ -53,40 +54,35 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
     @Override
     public void simpleInitApp() {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
         // Disable FlyByCamera.
         flyCam.setEnabled(false);
         
+        // Register mouse in system and add listeners to its movements
         registerInput();
         
         // All the objects that are pickable are added to this node.
         pickables = new Node("pickables");
         
-        Box floorBox = new Box(3,0.2f,3);
-        Geometry floor = new Geometry("Floor",floorBox);
+        // Make a floor
+        Geometry floorGeom = createFloorGeometry(new Vector3f(0,0,0),
+                new Vector3f(6,0.4f,6),ColorRGBA.Gray);
         
-        Material floorMat = new Material(assetManager,
-                "Common/MatDefs/Misc/Unshaded.j3md");
-        // Set blue color.
-        floorMat.setColor("Color", ColorRGBA.Blue);
+        // Position the floor
+        floorGeom.setLocalTranslation(new Vector3f(-2,1.5f,-2));
+        floorGeom.setLocalRotation(new Quaternion().fromAngleNormalAxis((float)Math.PI/4, Vector3f.UNIT_X));
         
-        // Set material to box.
-        floor.setMaterial(floorMat);
-        
-        floor.setLocalTranslation(new Vector3f(0,-1,0));
-        floor.setLocalRotation(new Quaternion().fromAngleNormalAxis((float)Math.PI/4, Vector3f.UNIT_X));
-        
-        //Geometry floor = createBoxGeometry(new Vector3f(0,0,0),
-          //      new Vector3f(10,0.2f,10),ColorRGBA.Blue);
-        
+        // Make two boxes to play with
         Geometry geom = createBoxGeometry(new Vector3f(0,0,0),
-                new Vector3f(1,1,1),ColorRGBA.Magenta);
+                new Vector3f(1,1,1),ColorRGBA.Blue);
         
-       
-        pickables.attachChild(floor);
+        Geometry geom2 = createBoxGeometry(new Vector3f(0,0,0),
+                new Vector3f(1,1,1),ColorRGBA.Yellow);
+        
+       // Put them in the pickable node
+        pickables.attachChild(floorGeom);
         pickables.attachChild(geom);
-        
-        //pickables.attachChild(createBoxGeometry(new Vector3f(0,0,0),
-          //      new Vector3f(1,1,1),ColorRGBA.Magenta));
+        pickables.attachChild(geom2);
         
         rootNode.attachChild(pickables);
         
@@ -102,6 +98,25 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
         //TODO: add render code
     }
     
+    private Geometry createFloorGeometry(Vector3f min, Vector3f max, ColorRGBA color) {
+        // Create a mesh for the box.
+        Mesh boxMesh = new Box(min, max);
+
+        // Create geometry based on the box mesh.
+        final Geometry floor = new Geometry("floor", boxMesh);
+
+        // Load material definition. Simple unshaded material.
+        Material mat = new Material(assetManager,
+                "Common/MatDefs/Misc/Unshaded.j3md");
+        // Set color.
+        mat.setColor("Color", color);
+        
+        // Set material to geometry.
+        floor.setMaterial(mat);
+        
+        return floor;
+    }
+    
     private Geometry createBoxGeometry(Vector3f min, Vector3f max, ColorRGBA color) {
         // Create a mesh for the box.
         Mesh boxMesh = new Box(min, max);
@@ -112,12 +127,15 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
         // Load material definition. Simple unshaded material.
         Material mat = new Material(assetManager,
                 "Common/MatDefs/Misc/Unshaded.j3md");
-        // Set blue color.
+        // Set color.
         mat.setColor("Color", color);
         
         // Set material to box.
         box.setMaterial(mat);
         
+        // Makes the box recognizable in the scene graph by its name 
+        // "topParent". This is needed for movement of box. 
+        // Name is used further down in code
         box.depthFirstTraversal(new SceneGraphVisitor() {
 
             @Override
@@ -142,6 +160,8 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
 
     public void onAction(String name, boolean isPressed, float tpf) {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        // Check if mouse key pressed
         if (name.equals(PickDown)) {
             if (isPressed) {
                 pick();
@@ -156,12 +176,14 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
 
     public void onAnalog(String name, float value, float tpf) {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    if (name.equals(MouseMoveLeft) || name.equals(MouseMoveRight)
+    
+        // Move object by calling placeObjAtContactPoint() if mouse moves
+        if (name.equals(MouseMoveLeft) || name.equals(MouseMoveRight)
                 || name.equals(MouseMoveUp) || name.equals(MouseMoveDown)) {
-        if (hasPickedObject && moveEnabled) {
-            placeObjAtContactPoint();
+            if (hasPickedObject && moveEnabled) {
+                placeObjAtContactPoint();
+            }
         }
-    }
     }
     
     private CollisionResult pickIfAny() {
@@ -177,6 +199,8 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
         Vector3f direction = cam.getWorldCoordinates(
                 new Vector2f(click2d.x, click2d.y), 1f).subtractLocal(click3d);
 
+        // Ray casting is projecting a beam into scene graph
+        // based on where the mouse points. Makes it 3D, going into the depth
         // Ray casting to find if any object intersects.
         Ray ray = new Ray(click3d, direction);
         pickables.collideWith(ray, results);
@@ -186,7 +210,7 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
         if (results.size() > 0) {
             // Only interested in the closest collision.
             closestCR = results.getClosestCollision();
-            System.out.println(closestCR.getContactPoint());
+            //System.out.println(closestCR.getContactPoint());
         }
         
         // Return closest pick result.
@@ -205,6 +229,7 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
             // Therefore we use the dirty hack, and obtain the handle to the
             // topmost parent for the sub mesh, so that we can manipulate the
             // object as a whole.
+            // Here the name given earlier to the geometry is used
             pickedObject = pickedObject.getUserData("topParent");
 
             if (pickedObject == null) {
@@ -214,6 +239,7 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
 
             // Remove the picked object from the pickable node, and add it
             // directly to the root of the scene graph.
+            // This way it can be moved all around the scene graph.
             pickedObject.removeFromParent();
             rootNode.attachChild(pickedObject);
             System.out.println("picked " + pickedObject.getName());
@@ -228,6 +254,7 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
         if (!hasPickedObject) {
             return;
         }
+        // Puts the geometry back in the pickable node for further picking
         System.out.println("released " + pickedObject.getName());
         pickedObject.removeFromParent();
         pickables.attachChild(pickedObject);
@@ -240,6 +267,18 @@ public class PickingSkel extends SimpleApplication implements ActionListener, An
         // which object we collide with, and then we place the picked object
         // on top of it. This gives a easy way to stack objects in the scene,
         // and prevents the user from moving the object into "thin-air".
+        
+        // This method follows the mouse using the 
+        // CollisionResult.getContactPoint. Then it sets the transformation
+        // using these coordinates, one little step at a time
+        
+        // This is called each time the mouse moves (from onAnalog), 
+        // continually updating the pickedObject location using getContactPoint
+        
+        // As long as we have the floor in the pickables variable, 
+        // it will register new mouse coordinates as long as we have
+        // the mouse over the floor geometry.
+        
         CollisionResult moveToPoint = pickIfAny();
         if (moveToPoint != null) {
             Vector3f loc = moveToPoint.getContactPoint();
