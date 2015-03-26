@@ -241,26 +241,17 @@ public class MeshSkel extends SimpleApplication {
                 0, 0, 1, 1
         };
         
-        if (indexed && indices!=null) {
             houseMesh.setBuffer(VertexBuffer.Type.Index, 3,
                     BufferUtils.createIntBuffer(indices));
             
             houseMesh.setBuffer(VertexBuffer.Type.Color, 4,
-                BufferUtils.createFloatBuffer(colors3));
-        }
-        
-        if (!indexed) {
-        houseMesh.setBuffer(VertexBuffer.Type.Color, 4,
-                BufferUtils.createFloatBuffer(colors2));
-        }       
+                BufferUtils.createFloatBuffer(colors));
 
         // Update the bounds of the mesh, so that bounding box is correctly
         // recalcualted internally by jME.
         houseMesh.updateBound();
             
         return houseMesh;
-        //}
-        //return null;
     }
     
 }
