@@ -50,6 +50,7 @@ public class Test extends SimpleApplication {
         keyGeom = new Geometry("Box",test);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.setColor("Color", ColorRGBA.Yellow);
+        
         keyGeom.setMaterial(mat);
         
         // Attach to Scene Graph

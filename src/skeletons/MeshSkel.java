@@ -47,6 +47,7 @@ public class MeshSkel extends SimpleApplication {
 
         Material mat = new Material(assetManager,
                 "Common/MatDefs/Misc/Unshaded.j3md");
+                
         // Set either custom colors or a static color
         mat.setColor("Color", new ColorRGBA(0.5f,0f,0.2f,1));
         //mat.setBoolean("VertexColor", true);
