@@ -1,0 +1,29 @@
+MaterialDef Diffuse {
+
+    // These will be the input parameters for the ambient and diffuse light color
+    MaterialParameters {
+        // In the shaders these are always uniforms, and named m_<ParameterName>.
+        Color AmbientColor
+        Color DiffuseColor
+    }
+
+    Technique {
+        // Need to define this for jME to pass the light information to our shaders
+        LightMode MultiPass
+
+        VertexShader GLSL100: Shaders/Diffuse.vert
+        FragmentShader GLSL100: Shaders/Diffuse.frag
+
+        WorldParameters {
+            // Transforming from model space to projection space
+            WorldViewProjectionMatrix
+            // Transforming from model space to view space
+            WorldViewMatrix
+            // Transforming normals from model space to view space
+            WorldMatrixInverseTranspose
+        }
+
+        Defines {
+        }
+    }
+}
