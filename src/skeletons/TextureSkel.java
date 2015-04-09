@@ -47,7 +47,7 @@ public class TextureSkel extends SimpleApplication {
         // To try textures, use one of these and comment the other
         
         // Make a big texture
-        makeItBig();
+        //makeItBig();
         
         // Make several small
         //makeSeveralSmall();
@@ -57,6 +57,9 @@ public class TextureSkel extends SimpleApplication {
         
         // Load a coffee model
         //loadModel();
+        
+        // Change colors of model
+        loadColoredModel();
         
     }
     
@@ -134,6 +137,43 @@ public class TextureSkel extends SimpleApplication {
         Spatial model = assetManager.loadModel("Models/Coffee/"
                 + "coffeeMaker.scene");
         model.scale(5,5,5);
+     
+        // Culling is about rendering the back side when seen from front
+        // It also about showing geometry from both sides
+        // Traverse scene to disable face culling for the geometry.
+        model.depthFirstTraversal(new SceneGraphVisitor() {
+            @Override
+            public void visit(Spatial spatial) {
+                if (spatial instanceof Geometry) {
+                    // Turn off face culling, so that we can see both sides.
+                    ((Geometry) spatial).getMaterial().getAdditionalRenderState().
+                            setFaceCullMode(RenderState.FaceCullMode.Off);
+                }
+            }
+        });
+
+        rootNode.attachChild(model);
+  
+        // You must add a directional light to make the model visible!
+        DirectionalLight sun = new DirectionalLight();
+        sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f).normalizeLocal());
+        rootNode.addLight(sun);
+        
+        // Light for all directions
+        AmbientLight ambient = new AmbientLight();
+        ambient.setColor(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
+        rootNode.addLight(ambient);
+    }
+    
+    public void loadColoredModel() {
+        Spatial model = assetManager.loadModel("Models/Coffee/"
+                + "coffeeMaker.scene");
+        model.scale(5,5,5);
+        
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setColor("Color", ColorRGBA.Blue);
+        
+        model.setMaterial(mat);
      
         // Culling is about rendering the back side when seen from front
         // It also about showing geometry from both sides
