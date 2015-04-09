@@ -8,12 +8,14 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.PhysicsTickListener;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.KeyInput;
 import com.jme3.input.event.KeyInputEvent;
+import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -26,7 +28,6 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
-import com.jme3.util.SkyFactory;
 import util.RawInputAdapter;
 
 /**
@@ -39,14 +40,21 @@ public class PhysicsSkel extends SimpleApplication {
     Geometry ball;
     Geometry obstacleOne;
     Geometry obstacleTwo;
-    
     // Bullet physics state.
     private BulletAppState bulletAppState;
-    
+    private RigidBodyControl boxControl;
+    private final Transform boxStartTransform = new Transform(
+            new Vector3f(0, 3, -0.75f), new Quaternion(new float[]{1, 0, 1}));
+    private RigidBodyControl boxControl2;
+    private final Transform boxStartTransform2 = new Transform(
+            new Vector3f(2, 3, -0.75f), new Quaternion(new float[]{1, 0, 1}));
     private RigidBodyControl sphereControl;
     private final Transform sphereStartTransform = new Transform(new Vector3f(0f, 3, 1f));
     private boolean[] keysPressed = new boolean[0xff];
+    private float mouseY = 0f;
+    private float mouseX = 0f;
     final float RADIUS = 0.2f;
+    final float BOXDIMENSION = 0.2f;
 
     public static void main(String[] args) {
         PhysicsSkel app = new PhysicsSkel();
@@ -58,16 +66,15 @@ public class PhysicsSkel extends SimpleApplication {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         //getFlyByCamera().setMoveSpeed(10);
         //flyCam.setEnabled(false);
+        //inputManager.setCursorVisible(false);
         
         viewPort.setBackgroundColor(ColorRGBA.Magenta.mult(0.5f));
-
-        addLights();
 
         board = makeBoard();
         ball = makeBall();
         obstacleOne = makeObstacle(ColorRGBA.Blue);
         obstacleTwo = makeObstacle(ColorRGBA.Green);
-        
+
         obstacleOne.setLocalTranslation(1f, 0f, 0f);
         obstacleTwo.setLocalTranslation(-1f, 0f, 0f);
 
@@ -85,26 +92,27 @@ public class PhysicsSkel extends SimpleApplication {
         ballNode.attachChild(ball);
         obstacleNode.attachChild(obstacleOne);
         obstacleNode.attachChild(obstacleTwo);
-        
+
         //boardNode.rotate(new Quaternion().fromAngleNormalAxis((float)Math.PI/4, Vector3f.UNIT_X));
 
         rootNode.attachChild(boardNode);
-        
+
+        addLights();
         initCamera();
         initPhysics();
         initInput();
+        initMouse();
         setGeomToPhysics();
 
     }
-    
-    
+
     private void initCamera() {
         cam.setLocation(new Vector3f(-3, 5, 6));
         cam.lookAt(new Vector3f(0, 1, 0), Vector3f.UNIT_Y);
         flyCam.setEnabled(false);
+        inputManager.setCursorVisible(false);
     }
-    
-    
+
     private void initPhysics() {
         bulletAppState = new BulletAppState();
         // add the bullet app state to the state manager, so that bullet is
@@ -112,7 +120,6 @@ public class PhysicsSkel extends SimpleApplication {
         stateManager.attach(bulletAppState);
 
         bulletAppState.getPhysicsSpace().addTickListener(new PhysicsTickListener() {
-
             @Override
             public void prePhysicsTick(PhysicsSpace ps, float f) {
                 // the force to apply to the sphere in each axis for moving it.
@@ -132,7 +139,11 @@ public class PhysicsSkel extends SimpleApplication {
                 if (keysPressed[KeyInput.KEY_DOWN]) {
                     forceMove.subtractLocal(camDir);
                 }
-                forceMove.y = 0;
+                forceMove.addLocal(mouseX,0,0);
+                forceMove.subtractLocal(0,0,mouseY);
+                
+                    forceMove.y = 0;
+                
                 if (forceMove.length() > 0) {
                     forceMove.normalize();
                 }
@@ -146,10 +157,9 @@ public class PhysicsSkel extends SimpleApplication {
             }
         });
     }
-    
+
     private void initInput() {
         inputManager.addRawInputListener(new RawInputAdapter() {
-
             @Override
             public void onKeyEvent(KeyInputEvent kie) {
                 keysPressed[kie.getKeyCode() % keysPressed.length] = kie.isPressed() || kie.isRepeating();
@@ -162,10 +172,24 @@ public class PhysicsSkel extends SimpleApplication {
             }
         });
     }
-    
+
+    private void initMouse() {
+        inputManager.addRawInputListener(new RawInputAdapter() {
+            @Override
+            public void onMouseMotionEvent(MouseMotionEvent mme) {
+                mouseY = (float)mme.getDY();
+                mouseX = (float)mme.getDX();
+            }
+        });
+
+    }
+
     private void resetScene() {
-        //resetRigidBodyControl(boxControl, boxStartTransform);
+        resetRigidBodyControl(boxControl, boxStartTransform);
+        resetRigidBodyControl(boxControl2, boxStartTransform2);
         resetRigidBodyControl(sphereControl, sphereStartTransform);
+        mouseY=0f;
+        mouseX=0;
     }
 
     private void toggleDebug() {
@@ -183,24 +207,40 @@ public class PhysicsSkel extends SimpleApplication {
         // therefore it must be reactivated.
         control.activate();
     }
-    
+
     public void addLights() {
         DirectionalLight sun = new DirectionalLight();
         sun.setColor(ColorRGBA.White);
         sun.setDirection(new Vector3f(0.5f, -1f, -0.5f).normalizeLocal());
         rootNode.addLight(sun);
     }
-    
+
     public void setGeomToPhysics() {
         CollisionShape groundCollisionShape = CollisionShapeFactory.createMeshShape(board);
         RigidBodyControl groundControl = new RigidBodyControl(groundCollisionShape, 0);
         board.addControl(groundControl);
         bulletAppState.getPhysicsSpace().add(groundControl);
-        
+
         CollisionShape sphereCollisionShape = new SphereCollisionShape(RADIUS);
         sphereControl = new RigidBodyControl(sphereCollisionShape, 3);
         ball.addControl(sphereControl);
         bulletAppState.getPhysicsSpace().add(sphereControl);
+
+        obstacleOne.setLocalTransform(boxStartTransform);
+        CollisionShape boxCollisionShape = new BoxCollisionShape(new Vector3f(BOXDIMENSION, BOXDIMENSION, BOXDIMENSION));
+        // this control has a mass of 1. Any mass different than 0 means that it
+        // is dynamic, and this will make the box fall when added to the physics
+        // space.
+        boxControl = new RigidBodyControl(boxCollisionShape, 1);
+        obstacleOne.addControl(boxControl);
+        bulletAppState.getPhysicsSpace().add(boxControl);
+
+        obstacleTwo.setLocalTransform(boxStartTransform2);
+        CollisionShape boxCollisionShape2 = new BoxCollisionShape(new Vector3f(BOXDIMENSION, BOXDIMENSION, BOXDIMENSION));
+
+        boxControl2 = new RigidBodyControl(boxCollisionShape2, 1);
+        obstacleTwo.addControl(boxControl2);
+        bulletAppState.getPhysicsSpace().add(boxControl2);
     }
 
     public Geometry makeBoard() {
@@ -226,19 +266,19 @@ public class PhysicsSkel extends SimpleApplication {
         Material mat2 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
         mat2.setBoolean("UseMaterialColors", true);
 
-        mat2.setColor("Diffuse", ColorRGBA.Red);  // minimum material color
-        mat2.setColor("Specular", ColorRGBA.Red.mult(0.1f)); // for shininess
+        mat2.setColor("Diffuse", ColorRGBA.Gray);  // minimum material color
+        mat2.setColor("Specular", ColorRGBA.Gray.mult(0.1f)); // for shininess
         mat2.setFloat("Shininess", 0f); // [1,128] for shininess
-        
+
         geom2.setMaterial(mat2);
-        
+
         //geom2.setLocalTransform(sphereStartTransform);
-        
+
         return geom2;
     }
-    
+
     public Geometry makeObstacle(ColorRGBA color) {
-        Box b = new Box(0.2f, 0.2f, 0.2f);
+        Box b = new Box(BOXDIMENSION, BOXDIMENSION, BOXDIMENSION);
         Geometry geom3 = new Geometry("Box", b);
 
         Material mat2 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
@@ -247,19 +287,22 @@ public class PhysicsSkel extends SimpleApplication {
         mat2.setColor("Diffuse", color);  // minimum material color
         mat2.setColor("Specular", color.mult(0.1f)); // for shininess
         mat2.setFloat("Shininess", 0f); // [1,128] for shininess
-        
+
         geom3.setMaterial(mat2);
-        
+
         return geom3;
     }
 
     @Override
     public void simpleUpdate(float tpf) {
         //TODO: add update code
+        System.out.println("X: " + mouseX + "Y: "+mouseY);
+        inputManager.setCursorVisible(false);
     }
 
     @Override
     public void simpleRender(RenderManager rm) {
         //TODO: add render code
     }
+    
 }
