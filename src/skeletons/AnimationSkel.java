@@ -11,7 +11,9 @@ import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 
 /**
- *
+ * Skeleton for different types of animation. Some using custom Shaders. Used 
+ * IFE Examples as a starter point
+ * 
  * @author Tor Arne
  */
 public class AnimationSkel extends SimpleApplication {
