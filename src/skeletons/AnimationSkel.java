@@ -35,6 +35,7 @@ public class AnimationSkel extends SimpleApplication {
     public void growBox() {
         Box b = new Box(1, 1, 1);
         Geometry geom = new Geometry("Box", b);
+        // Uses the custom shader called Grow. This will scale the geometry
         Material mat = new Material(assetManager,
                 "MatDefs/Grow.j3md");
         
@@ -42,11 +43,13 @@ public class AnimationSkel extends SimpleApplication {
         // Set mode to repeat, so only the fractional part is considered when we move the texture
         // coordinates.
         texture.setWrap(Texture.WrapMode.Repeat);
+        // Using shader variables for setting texture and scale factor
         mat.setTexture("Image", texture);
-        mat.setFloat("Size", 5.0f);
+        mat.setFloat("Size", 40.0f);
         
         geom.setMaterial(mat);
         
         rootNode.attachChild(geom);
     }
+    
 }

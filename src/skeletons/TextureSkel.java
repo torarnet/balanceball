@@ -18,6 +18,7 @@ import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.SceneGraphVisitor;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 
@@ -60,6 +61,9 @@ public class TextureSkel extends SimpleApplication {
         
         // Change colors of model
         loadColoredModel();
+        
+        // Createa a background
+        makeBackground();
         
     }
     
@@ -200,6 +204,28 @@ public class TextureSkel extends SimpleApplication {
         AmbientLight ambient = new AmbientLight();
         ambient.setColor(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
         rootNode.addLight(ambient);
+    }
+    
+    public void makeBackground() {
+        
+        Box b = new Box(300, 300, 300);
+        Geometry geom2 = new Geometry("Box", b);
+        Material mat = new Material(assetManager,
+                "Common/MatDefs/Misc/Unshaded.j3md");
+        
+        Texture texture = assetManager.loadTexture("Textures/back1.jpg");
+        // Set mode to repeat, so only the fractional part is considered when we move the texture
+        // coordinates.
+        texture.setWrap(Texture.WrapMode.Repeat);
+        mat.setTexture("ColorMap",
+                assetManager.loadTexture("Textures/back1.jpg"));
+        mat.getAdditionalRenderState().
+                            setFaceCullMode(RenderState.FaceCullMode.Off);
+        
+        geom2.setMaterial(mat);
+        
+        rootNode.attachChild(geom2);
+        
     }
     
     @Override
