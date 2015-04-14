@@ -1,0 +1,21 @@
+MaterialDef Grow {
+
+    MaterialParameters {
+        Texture2D Image
+        Float Size : 1.0
+    }
+
+    Technique {
+        VertexShader GLSL100: Shaders/Grow.vert
+        FragmentShader GLSL100: Shaders/Grow.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            Time
+        }
+
+        Defines {
+            HAS_IMAGE : Image
+        }
+    }
+}

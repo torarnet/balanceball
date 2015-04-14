@@ -147,7 +147,7 @@ public class PhysicsSkel extends SimpleApplication {
                 if (forceMove.length() > 0) {
                     forceMove.normalize();
                 }
-                forceMove.multLocal(20f);
+                forceMove.multLocal(10f);
                 // apply the force to the center of the sphere.
                 sphereControl.applyCentralForce(forceMove);
             }
