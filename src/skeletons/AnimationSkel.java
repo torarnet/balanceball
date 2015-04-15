@@ -8,6 +8,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 
 /**
@@ -33,19 +34,20 @@ public class AnimationSkel extends SimpleApplication {
     
     // Makes a box and expands it using custom shader for animation.
     public void growBox() {
-        Box b = new Box(1, 1, 1);
-        Geometry geom = new Geometry("Box", b);
+        Sphere s = new Sphere(10,10,0.5f);
+        Geometry geom = new Geometry("Sphere", s);
         // Uses the custom shader called Grow. This will scale the geometry
         Material mat = new Material(assetManager,
                 "MatDefs/Grow.j3md");
         
-        Texture texture = assetManager.loadTexture("Textures/boxtile.png");
+        Texture texture = assetManager.loadTexture("Textures/fire1.jpg");
         // Set mode to repeat, so only the fractional part is considered when we move the texture
         // coordinates.
         texture.setWrap(Texture.WrapMode.Repeat);
         // Using shader variables for setting texture and scale factor
         mat.setTexture("Image", texture);
-        mat.setFloat("Size", 40.0f);
+        mat.setFloat("Size", 2.0f);
+        mat.setFloat("Speed", 10.0f);
         
         geom.setMaterial(mat);
         

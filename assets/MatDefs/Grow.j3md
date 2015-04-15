@@ -3,6 +3,7 @@ MaterialDef Grow {
     MaterialParameters {
         Texture2D Image
         Float Size : 1.0
+        Float Speed : 1.0
     }
 
     Technique {
