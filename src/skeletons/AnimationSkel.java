@@ -46,8 +46,8 @@ public class AnimationSkel extends SimpleApplication {
         texture.setWrap(Texture.WrapMode.Repeat);
         // Using shader variables for setting texture and scale factor
         mat.setTexture("Image", texture);
-        mat.setFloat("Size", 2.0f);
-        mat.setFloat("Speed", 10.0f);
+        mat.setFloat("Size", 10.0f);
+        mat.setFloat("Speed", 20.0f);
         
         geom.setMaterial(mat);
         

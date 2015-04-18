@@ -20,10 +20,13 @@ import com.jme3.texture.Texture;
  */
 public class Main extends SimpleApplication {
 
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    Geometry keyGeom;
+    Geometry[] boxes;
+    Geometry ball;
+    Geometry board;
+    Geometry sky;
+    Texture boardText;
+    Lights lights;
+    Mesh mesh;
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -37,53 +40,66 @@ public class Main extends SimpleApplication {
     @Override
     public void simpleInitApp() {
 
-        DirectionalLight sun = new DirectionalLight();
-        sun.setColor(ColorRGBA.White);
-        sun.setDirection(new Vector3f(0.5f, -1f, -0.5f).normalizeLocal());
-        rootNode.addLight(sun);
+        initClasses();
+        initCamera();
+        initTextures();
+        initGeom();
+        rootNode.attachChild(board);
 
-        flyCam.setMoveSpeed(10);
+    }
 
-        Box b = new Box(10, 0.5f, 10);
+    public void initClasses() {
+        lights = new Lights();
+        mesh = new Mesh();
+    }
+
+    public void initCamera() {
+        cam.setLocation(new Vector3f(0, 7, -8));
+        cam.lookAt(new Vector3f(0, 1, 0), Vector3f.UNIT_Y);
+        flyCam.setEnabled(false);
+        inputManager.setCursorVisible(false);
+    }
+
+    public void initTextures() {
+        boardText = assetManager.loadTexture("Textures/board1.jpg");
+    }
+
+    public void initGeom() {
+        boxes = makeBoxes();
+        ball = makeBall();
+        board = makeBoard();
+        sky = makeSky();
+    }
+
+    public Geometry makeBoard() {
+        Box b = new Box(3, 0.1f, 3);
         Geometry geom = new Geometry("Box", b);
-        
-        // Makes a new texture object
-        Texture text = assetManager.loadTexture("Textures/tile2.png");
-        
-        Material mat = new Material(assetManager,
-                "Common/MatDefs/Light/Lighting.j3md");
 
-        mat.setBoolean("UseMaterialColors", true);
-        mat.setTexture("DiffuseMap", text); // with Lighting.j3md
-        mat.setTexture("SpecularMap", text); // with Lighting.j3md
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 
-        //material.setColor("Ambient", ColorRGBA.Red.mult(0.5f));
-        mat.setColor("Diffuse", ColorRGBA.White);  // minimum material color
-        mat.setColor("Specular", ColorRGBA.White.mult(0.1f)); // for shininess
-        mat.setFloat("Shininess", 0f); // [1,128] for shininess
+        mat.setTexture("ColorMap", boardText);
 
-        
-        // .setWrap makes it possible to use the texture several times
-        // in the same geometry
-        text.setWrap(Texture.WrapMode.Repeat);
+        boardText.setWrap(Texture.WrapMode.Repeat);
 
-        //mat.setTexture("ColorMap",text);
-
-        //Says to use the texture 20 * 20 times to fill the surface
-        //b.scaleTextureCoordinates(new Vector2f(20, 20));
         geom.setMaterial(mat);
 
-        // Adjust the position
-        geom.setLocalTranslation(new Vector3f(-5f, -4f, 5f));
+        return geom;
+    }
 
-        // Makes the geometry visible from both sides
-        geom.getMaterial().getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
+    public Geometry makeSky() {
+        return null;
+    }
 
+    public Geometry[] makeBoxes() {
+        return null;
+    }
 
-        //geom.setMaterial(mat);
+    public Geometry makeBox() {
+        return null;
+    }
 
-        rootNode.attachChild(geom);
-
+    public Geometry makeBall() {
+        return null;
     }
 
     @Override
