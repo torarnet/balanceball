@@ -3,15 +3,11 @@ package mygame;
 import com.jme3.app.SimpleApplication;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
-import com.jme3.material.Material;
-import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector2f;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
 
@@ -28,13 +24,15 @@ public class Main extends SimpleApplication {
     Geometry sky;
     Texture boardText;
     Texture sphereText;
+    MakeGeom makeGeom;
     Lights lights;
-    Mesh mesh;
+    CustomMesh mesh;
     AmbientLight ambient;
     DirectionalLight directional;
     DirectionalLight directional2;
     final float RADIUS = 0.2f;
     final float BOXDIMENSION = 0.2f;
+    float cameraMove = 0;
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -47,7 +45,7 @@ public class Main extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-MakeGeom make = new MakeGeom(assetManager);
+
         initClasses();
         initCamera();
         initTextures();
@@ -57,12 +55,17 @@ MakeGeom make = new MakeGeom(assetManager);
         rootNode.attachChild(board);
         rootNode.attachChild(sky);
         rootNode.attachChild(ball);
+        rootNode.attachChild(boxes[0]);
+        rootNode.attachChild(boxes[1]);
+        rootNode.attachChild(boxes[2]);
 
     }
 
     public void initClasses() {
+        makeGeom = new MakeGeom(assetManager);
         lights = new Lights();
-        mesh = new Mesh();
+        mesh = new CustomMesh();
+        
     }
 
     public void initCamera() {
@@ -71,6 +74,20 @@ MakeGeom make = new MakeGeom(assetManager);
         flyCam.setEnabled(false);
         inputManager.setCursorVisible(false);
     }
+    
+    public void moveCamera() {
+        //cam.setRotation(new Quaternion().fromAngleNormalAxis(cameraMove, Vector3f.UNIT_Y));
+        //cam.setLocation(new Vector3f((float)Math.sin(cameraMove),7,-8));
+        //cam.setLocation(new Vector3f((float)Math.cos(cameraMove),7,-8));
+        
+        float deltaX = (float)Math.cos(cameraMove);
+        float deltaZ = (float)Math.sin(cameraMove);
+        
+        cam.lookAt(new Vector3f(0,1,0), Vector3f.UNIT_Y);
+
+        cam.setLocation(new Vector3f(deltaX*8,7,-8*deltaZ));
+
+    }
 
     public void initTextures() {
         boardText = assetManager.loadTexture("Textures/board1.jpg");
@@ -78,10 +95,16 @@ MakeGeom make = new MakeGeom(assetManager);
     }
 
     public void initGeom() {
-        boxes = makeBoxes();
-        ball = makeBall();
-        board = makeBoard();
-        sky = makeSky();
+        //boxes = makeBoxes();
+        //ball = makeBall();
+        //board = makeBoard();
+        //sky = makeSky();
+        sky = makeGeom.makeSky(sphereText);
+        board = makeGeom.makeBoard(boardText);
+        boxes = makeGeom.makeBoxes(5, 0.2f, ColorRGBA.Blue, null);
+        ball = makeGeom.makeBall(RADIUS, ColorRGBA.Red);
+        
+        
     }
     
     public void addLights() {
@@ -97,74 +120,18 @@ MakeGeom make = new MakeGeom(assetManager);
     
     public void doTranslations() {
         ball.setLocalTranslation(0, 2, 0);
+        boxes[0].setLocalTranslation(-1, 1, 0);
+        boxes[1].setLocalTranslation(1, 1, 0);
+        boxes[2].setLocalTranslation(2, 1, 0);
     }
 
-    public Geometry makeBoard() {
-        Box b = new Box(3, 0.1f, 3);
-        Geometry geom = new Geometry("Box", b);
-
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-
-        mat.setTexture("ColorMap", boardText);
-
-        boardText.setWrap(Texture.WrapMode.Repeat);
-
-        geom.setMaterial(mat);
-
-        return geom;
-    }
-
-    public Geometry makeSky() {
-        Sphere s = new Sphere(20, 20, 30);
-        Geometry geom = new Geometry("Sphere", s);
-
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-
-        mat.setTexture("ColorMap", sphereText);
-        
-        s.scaleTextureCoordinates(new Vector2f(20,20));
-
-        sphereText.setWrap(Texture.WrapMode.Repeat);
-        
-        //mat.setColor("Color", ColorRGBA.Blue);
-        
-        mat.getAdditionalRenderState().
-                            setFaceCullMode(RenderState.FaceCullMode.Off);
-
-        geom.setMaterial(mat);
-
-        return geom;
-    }
-
-    public Geometry[] makeBoxes() {
-        return null;
-    }
-
-    public Geometry makeBox() {
-        return null;
-    }
-
-    public Geometry makeBall() {
-        Sphere s = new Sphere(10, 10, RADIUS);
-        Geometry geom = new Geometry("Sphere", s);
-
-        Material mat2 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat2.setBoolean("UseMaterialColors", true);
-
-        mat2.setColor("Diffuse", ColorRGBA.Gray);  // minimum material color
-        mat2.setColor("Specular", ColorRGBA.Gray.mult(0.1f)); // for shininess
-        mat2.setFloat("Shininess", 64f); // [1,128] for shininess
-
-        geom.setMaterial(mat2);
-
-        //geom2.setLocalTransform(sphereStartTransform);
-
-        return geom;
-    }
+    
 
     @Override
     public void simpleUpdate(float tpf) {
         //TODO: add update code
+        cameraMove+=1.0f*tpf;
+        moveCamera();
     }
 
     @Override

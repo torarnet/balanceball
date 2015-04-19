@@ -6,8 +6,11 @@ package mygame;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
@@ -19,39 +22,81 @@ import com.jme3.texture.Texture;
 public class MakeGeom {
     
     private AssetManager assetManager;
+    private CustomMesh customMesh;
+    private Mesh mesh;
     
     public MakeGeom(AssetManager assetManager) {
         this.assetManager=assetManager;
     }
     
-    public Geometry getBackGround(Texture text) {
-        Sphere sphereBackground = new Sphere(10,10,100);
+    public Geometry makeSky(Texture text) { 
+        Sphere s = new Sphere(20, 20, 30);
+        Geometry geom = new Geometry("Sphere", s);
+
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+
+        mat.setTexture("ColorMap", text);
         
-        Geometry geometry = new Geometry("Sphere", sphereBackground);
+        s.scaleTextureCoordinates(new Vector2f(20,20));
+
+        text.setWrap(Texture.WrapMode.Repeat);
         
-        return null;
+        //mat.setColor("Color", ColorRGBA.Blue);
         
-        
+        mat.getAdditionalRenderState().
+                            setFaceCullMode(RenderState.FaceCullMode.Off);
+
+        geom.setMaterial(mat);
+
+        return geom;
     }
     
-    public Geometry getBoard(Texture text) {
+    public Geometry makeBoard(Texture text) {
         Box b = new Box(3, 0.1f, 3);
         Geometry geom = new Geometry("Box", b);
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture text = assetManager.loadTexture("Textures/tile4.png");
 
         mat.setTexture("ColorMap", text);
 
         text.setWrap(Texture.WrapMode.Repeat);
 
         geom.setMaterial(mat);
-        
+
         return geom;
     }
     
-    public Geometry getBoxes(float size,ColorRGBA color,Texture text) {
-         Box b = new Box(size,size,size);
+    public Geometry makeBall(Float radius,ColorRGBA color) {
+        Sphere s = new Sphere(10, 10, radius);
+        Geometry geom = new Geometry("Sphere", s);
+
+        Material mat2 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat2.setBoolean("UseMaterialColors", true);
+
+        mat2.setColor("Diffuse", color);  // minimum material color
+        mat2.setColor("Specular", color.mult(0.1f)); // for shininess
+        mat2.setFloat("Shininess", 64f); // [1,128] for shininess
+
+        geom.setMaterial(mat2);
+
+        //geom2.setLocalTransform(sphereStartTransform);
+
+        return geom;
+    }
+    
+    public Geometry[] makeBoxes(int amount,float size,ColorRGBA color,Texture text) {
+        Geometry[] boxArray;
+        boxArray = new Geometry[amount];
+        
+        for (int i=0;i<amount;i++) {
+             Geometry oneBox = makeBox(size,color,text);
+             boxArray[i]=oneBox;
+        }
+        return boxArray;
+    }
+
+    public Geometry makeBox(float size,ColorRGBA color,Texture text) {
+        Box b = new Box(size,size,size);
         Geometry geom3 = new Geometry("Box", b);
 
         Material mat2 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
