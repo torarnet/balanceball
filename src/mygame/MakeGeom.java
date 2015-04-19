@@ -31,13 +31,14 @@ public class MakeGeom {
     
     public Geometry makeSky(Texture text) { 
         Sphere s = new Sphere(20, 20, 30);
+        //Box b = new Box(30,30,30);
         Geometry geom = new Geometry("Sphere", s);
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 
         mat.setTexture("ColorMap", text);
         
-        s.scaleTextureCoordinates(new Vector2f(20,20));
+        s.scaleTextureCoordinates(new Vector2f(5,5));
 
         text.setWrap(Texture.WrapMode.Repeat);
         

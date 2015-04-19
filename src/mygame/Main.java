@@ -1,6 +1,7 @@
 package mygame;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.input.controls.AnalogListener;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
@@ -10,6 +11,7 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
+import java.util.List;
 
 /**
  * test
@@ -27,12 +29,16 @@ public class Main extends SimpleApplication {
     MakeGeom makeGeom;
     Lights lights;
     CustomMesh mesh;
+    KeyInput keyInput;
     AmbientLight ambient;
     DirectionalLight directional;
     DirectionalLight directional2;
+    AnalogListener analogListener;
+    
     final float RADIUS = 0.2f;
     final float BOXDIMENSION = 0.2f;
     float cameraMove = 0;
+    private boolean[] keysPressed = new boolean[0xff];
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -52,6 +58,7 @@ public class Main extends SimpleApplication {
         initGeom();
         addLights();
         doTranslations();
+        initKeys();
         rootNode.attachChild(board);
         rootNode.attachChild(sky);
         rootNode.attachChild(ball);
@@ -65,6 +72,7 @@ public class Main extends SimpleApplication {
         makeGeom = new MakeGeom(assetManager);
         lights = new Lights();
         mesh = new CustomMesh();
+        keyInput = new KeyInput(inputManager,keysPressed);
         
     }
 
@@ -99,6 +107,7 @@ public class Main extends SimpleApplication {
         //ball = makeBall();
         //board = makeBoard();
         //sky = makeSky();
+        
         sky = makeGeom.makeSky(sphereText);
         board = makeGeom.makeBoard(boardText);
         boxes = makeGeom.makeBoxes(5, 0.2f, ColorRGBA.Blue, null);
@@ -124,14 +133,48 @@ public class Main extends SimpleApplication {
         boxes[1].setLocalTranslation(1, 1, 0);
         boxes[2].setLocalTranslation(2, 1, 0);
     }
-
     
+    public void initKeys() {
+        List<String> keyMappings = keyInput.getMappings();
+        
+        // For continuus actions
+        analogListener = new AnalogListener() {
+            public void onAnalog(String name, float keyPressed, float tpf) {
+                /** TODO: test for mapping names and implement actions */
+                
+                // Does commands based on keymapped names
+                // Increases and decreases x,y,z values if keys are pressed
+                if (name.equals("MoveLeft")) {         // test?
+                    cameraMove-=3.0f*tpf;
+                    moveCamera();
+                } 
+                if (name.equals("MoveRight")) {         // test?
+                    cameraMove+=3.0f*tpf;
+                    moveCamera();
+                } 
+                
+            }
+         };
+        
+        addListener(keyMappings);
+        
+    }
+    
+    public void addListener(List<String> keyMappings) {
+        String[] stringArray = new String[keyMappings.size()];
+        stringArray = keyMappings.toArray(stringArray);
+        
+        //inputManager.addListener(analogListener, new String[]{"MoveLeft","MoveRight",
+          //  "MoveY","MoveY2","MoveZ","MoveZ2"});
+        
+        inputManager.addListener(analogListener, stringArray);
+    }
 
     @Override
     public void simpleUpdate(float tpf) {
         //TODO: add update code
-        cameraMove+=1.0f*tpf;
-        moveCamera();
+        //cameraMove+=cameraMove*tpf;
+        //moveCamera();
     }
 
     @Override

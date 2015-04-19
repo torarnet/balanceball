@@ -6,6 +6,7 @@ package skeletons;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
+import com.jme3.math.Vector2f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
@@ -40,10 +41,11 @@ public class AnimationSkel extends SimpleApplication {
         Material mat = new Material(assetManager,
                 "MatDefs/Grow.j3md");
         
-        Texture texture = assetManager.loadTexture("Textures/fire1.jpg");
+        Texture texture = assetManager.loadTexture("Textures/fire5.png");
         // Set mode to repeat, so only the fractional part is considered when we move the texture
         // coordinates.
-        texture.setWrap(Texture.WrapMode.Repeat);
+        //s.scaleTextureCoordinates(new Vector2f(5,5));
+        //texture.setWrap(Texture.WrapMode.Repeat);
         // Using shader variables for setting texture and scale factor
         mat.setTexture("Image", texture);
         mat.setFloat("Size", 10.0f);
