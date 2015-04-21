@@ -24,6 +24,7 @@ public class Main extends SimpleApplication {
     Geometry ball;
     Geometry board;
     Geometry sky;
+    Geometry goal;
     Texture boardText;
     Texture sphereText;
     MakeGeom makeGeom;
@@ -65,6 +66,9 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(boxes[0]);
         rootNode.attachChild(boxes[1]);
         rootNode.attachChild(boxes[2]);
+        rootNode.attachChild(goal);
+        
+        test();
 
     }
 
@@ -77,8 +81,9 @@ public class Main extends SimpleApplication {
     }
 
     public void initCamera() {
-        cam.setLocation(new Vector3f(0, 7, -8));
-        cam.lookAt(new Vector3f(0, 1, 0), Vector3f.UNIT_Y);
+        //cam.setLocation(new Vector3f(0, 7, -8));
+        //cam.lookAt(new Vector3f(0, 1, 0), Vector3f.UNIT_Y);
+        moveCamera();
         flyCam.setEnabled(false);
         inputManager.setCursorVisible(false);
     }
@@ -90,10 +95,10 @@ public class Main extends SimpleApplication {
         
         float deltaX = (float)Math.cos(cameraMove);
         float deltaZ = (float)Math.sin(cameraMove);
+ 
+        cam.setLocation(new Vector3f(deltaX*8,7,-8*deltaZ));
         
         cam.lookAt(new Vector3f(0,1,0), Vector3f.UNIT_Y);
-
-        cam.setLocation(new Vector3f(deltaX*8,7,-8*deltaZ));
 
     }
 
@@ -112,8 +117,8 @@ public class Main extends SimpleApplication {
         board = makeGeom.makeBoard(boardText);
         boxes = makeGeom.makeBoxes(5, 0.2f, ColorRGBA.Blue, null);
         ball = makeGeom.makeBall(RADIUS, ColorRGBA.Red);
-        
-        
+        goal = makeGeom.makeGoal(ColorRGBA.Yellow);
+
     }
     
     public void addLights() {
@@ -132,6 +137,11 @@ public class Main extends SimpleApplication {
         boxes[0].setLocalTranslation(-1, 1, 0);
         boxes[1].setLocalTranslation(1, 1, 0);
         boxes[2].setLocalTranslation(2, 1, 0);
+        goal.setLocalTranslation(0, 1, 0); 
+    }
+    
+    public void doScaling() {
+        goal.setLocalScale(0.3f);
     }
     
     public void initKeys() {
@@ -168,6 +178,24 @@ public class Main extends SimpleApplication {
           //  "MoveY","MoveY2","MoveZ","MoveZ2"});
         
         inputManager.addListener(analogListener, stringArray);
+    }
+    
+    public void test() {
+        float[] arr = new CustomMath().getBoardDimension(board);
+        Geometry geom1 = makeGeom.makeBox(0.3f, ColorRGBA.Green, boardText);
+        Geometry geom2 = makeGeom.makeBox(0.3f, ColorRGBA.Green, boardText);
+        Geometry geom3 = makeGeom.makeBox(0.3f, ColorRGBA.Green, boardText);
+        Geometry geom4 = makeGeom.makeBox(0.3f, ColorRGBA.Green, boardText);
+        
+        geom1.setLocalTranslation(arr[0], 0.5f, arr[2]);
+        geom2.setLocalTranslation(arr[0], 0.5f, arr[3]);
+        geom3.setLocalTranslation(arr[1], 0.5f, arr[2]);
+        geom4.setLocalTranslation(arr[1], 0.5f, arr[3]);
+        
+        rootNode.attachChild(geom1);
+        rootNode.attachChild(geom2);
+        rootNode.attachChild(geom3);
+        rootNode.attachChild(geom4);
     }
 
     @Override

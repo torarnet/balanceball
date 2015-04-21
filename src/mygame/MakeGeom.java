@@ -112,4 +112,31 @@ public class MakeGeom {
         return geom3;
     }
     
+    public Geometry makeGoal(ColorRGBA color) {
+        mesh = new CustomMesh().makeGoal();
+        
+        Geometry geom3 = new Geometry("Goal", mesh);
+
+        Material mat2 = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat2.setBoolean("UseMaterialColors", true);
+
+        mat2.setColor("Ambient", color.mult(0.7f));
+        mat2.setColor("Diffuse", color);  // minimum material color
+        mat2.setColor("Specular", color.mult(0.1f)); // for shininess
+        mat2.setFloat("Shininess", 64f); // [1,128] for shininess
+        
+        Material mat3 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat3.setColor("Color", color);
+        
+        // To show Vertices
+        //mat3.getAdditionalRenderState().setWireframe(true);
+        
+        mat3.getAdditionalRenderState().
+                            setFaceCullMode(RenderState.FaceCullMode.Off);
+
+        geom3.setMaterial(mat2);
+        
+        return geom3;
+    }
+    
 }
