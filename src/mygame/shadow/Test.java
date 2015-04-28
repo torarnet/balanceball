@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package mygame;
+package mygame.shadow;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;

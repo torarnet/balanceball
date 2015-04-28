@@ -25,7 +25,7 @@ public class KeyInput {
         this.inputManager = inputManager;
         this.keysPressed = keysPressed;
         keyMaps = new ArrayList<String>();
-        mapKeys();
+        //mapKeys();
         initInput();
     }
 

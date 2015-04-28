@@ -32,7 +32,7 @@ public class MakeGeom {
     public Geometry makeSky(Texture text) { 
         Sphere s = new Sphere(20, 20, 30);
         Box b = new Box(30,30,30);
-        Geometry geom = new Geometry("Sphere", b);
+        Geometry geom = new Geometry("Background", b);
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 
@@ -131,13 +131,14 @@ public class MakeGeom {
         mat2.setFloat("Shininess", 64f); // [1,128] for shininess
         
         Material mat3 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat3.setColor("Color", color);
+        //mat3.setColor("Color", color);
+        //mat3.setBoolean("VertexColor", true);
         
         // To show Vertices
         //mat3.getAdditionalRenderState().setWireframe(true);
         
-        mat3.getAdditionalRenderState().
-                            setFaceCullMode(RenderState.FaceCullMode.Off);
+        //mat3.getAdditionalRenderState().
+          //                  setFaceCullMode(RenderState.FaceCullMode.Off);
 
         geom3.setMaterial(mat2);
         

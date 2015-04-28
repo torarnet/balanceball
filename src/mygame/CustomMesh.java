@@ -70,7 +70,20 @@ public class CustomMesh {
         // Each triangle because color is reused for the same vertexes
         float[] colors = new float[]{
             1, 0, 0, 1,
+            1, 1, 0, 1,
+            0, 1, 1, 1,
+            0, 0, 1, 1,
             1, 0, 0, 1,
+            1, 1, 0, 1,
+            0, 1, 1, 1,
+            0, 0, 1, 1,
+            1, 0, 0, 1,
+            1, 1, 0, 1,
+            0, 1, 1, 1,
+            0, 0, 1, 1,
+            1, 0, 0, 1,
+            0, 0, 1, 1,
+            0, 0, 1, 1,
         };
         
          mesh.setBuffer(VertexBuffer.Type.Index, 3,
@@ -78,8 +91,8 @@ public class CustomMesh {
 
         // To use this, set mat.setBoolean("VertexColor", true); in
         // material method
-        //mesh.setBuffer(VertexBuffer.Type.Color, 4,
-          //      BufferUtils.createFloatBuffer(colors));
+        mesh.setBuffer(VertexBuffer.Type.Color, 4,
+                BufferUtils.createFloatBuffer(colors));
 
         // Update the bounds of the mesh, so that bounding box is correctly
         // recalcualted internally by jME.

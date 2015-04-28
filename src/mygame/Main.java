@@ -6,7 +6,6 @@ import com.jme3.input.controls.AnalogListener;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
@@ -27,14 +26,16 @@ public class Main extends SimpleApplication {
     Geometry board;
     Geometry sky;
     Geometry goal;
-    Node boxNode = new Node();
+    Node boxNode;
+    Node boardNode;
     Texture boardText;
     Texture sphereText;
     Texture boxText;
     MakeGeom makeGeom;
     Lights lights;
     CustomMesh mesh;
-    KeyInput keyInput;
+    KeyInput keyInputs;
+    CustomMath custMath;
     AmbientLight ambient;
     DirectionalLight directional;
     DirectionalLight directional2;
@@ -44,19 +45,23 @@ public class Main extends SimpleApplication {
     final float BOXDIMENSION = 0.2f;
     float cameraMove = 0;
     private boolean[] keysPressed = new boolean[0xff];
+    private int amount;
+    private int maxSize;
 
     public static void main(String[] args) {
         Main app = new Main();
         AppSettings setting = new AppSettings(true);
         setting.setTitle("BalanceBall");
-        //setting.setSettingsDialogImage("Interface/piratelogo.jpg");
+        setting.setSettingsDialogImage("Interface/logo1.png");
+        //setting.setFrameRate(60);
         app.setSettings(setting);
         app.start();
     }
 
     @Override
     public void simpleInitApp() {
-
+        
+        initVars();
         initClasses();
         initCamera();
         initTextures();
@@ -64,24 +69,30 @@ public class Main extends SimpleApplication {
         addLights();
         doTranslations();
         initKeys();
+        initGrid();
+        makeScene();
         rootNode.attachChild(board);
         rootNode.attachChild(sky);
         rootNode.attachChild(ball);
-        rootNode.attachChild(boxes[0]);
-        rootNode.attachChild(boxes[1]);
-        rootNode.attachChild(boxes[2]);
+        //rootNode.attachChild(boxes[0]);
+        //rootNode.attachChild(boxes[1]);
+        //rootNode.attachChild(boxes[2]);
         rootNode.attachChild(goal);
 
         test();
 
     }
 
+    public void initVars() {
+        amount=4;
+        maxSize=3;
+    }
+    
     public void initClasses() {
         makeGeom = new MakeGeom(assetManager);
         lights = new Lights();
         mesh = new CustomMesh();
-        keyInput = new KeyInput(inputManager, keysPressed);
-
+        keyInputs = new KeyInput(inputManager, keysPressed);
     }
 
     public void initCamera() {
@@ -140,10 +151,8 @@ public class Main extends SimpleApplication {
 
     public void doTranslations() {
         ball.setLocalTranslation(0, 2, 0);
-        boxes[0].setLocalTranslation(-1, 1, 0);
-        boxes[1].setLocalTranslation(1, 1, 0);
-        boxes[2].setLocalTranslation(2, 1, 0);
         goal.setLocalTranslation(0, 1, 0);
+        goal.setLocalScale(0.3f);
     }
 
     public void doScaling() {
@@ -151,7 +160,9 @@ public class Main extends SimpleApplication {
     }
 
     public void initKeys() {
-        List<String> keyMappings = keyInput.getMappings();
+        keyInputs.mapKeys();
+        List<String> keyMappings;
+        keyMappings = keyInputs.getMappings();
 
         // For continuus actions
         analogListener = new AnalogListener() {
@@ -175,7 +186,7 @@ public class Main extends SimpleApplication {
         
         actionListener = new ActionListener() {
             public void onAction(String name, boolean isPressed, float tpf) {
-                if (name.equals("Reset")) {
+                if (name.equals("Reset") && isPressed) {
                     test();
                 }
             } 
@@ -195,39 +206,44 @@ public class Main extends SimpleApplication {
         inputManager.addListener(actionListener, stringArray);
         inputManager.addListener(analogListener, stringArray);
     }
+    
+    public void initGrid() {
+        custMath = new CustomMath(maxSize,board,amount);
+    }
+    
+    public void makeScene() {
+        boardNode = new Node();
+        boxNode = new Node();
+        
+        boardNode.attachChild(boxNode);
+        rootNode.attachChild(boardNode);
+    }
 
     public void test() {
-        CustomMath custMath = new CustomMath();
-        float[] arr = custMath.getBoardDimension(board);
-        Geometry geom1 = makeGeom.makeBox(0.3f, ColorRGBA.Green, null);
-        Geometry geom2 = makeGeom.makeBox(0.3f, ColorRGBA.Green, null);
-        Geometry geom3 = makeGeom.makeBox(0.3f, ColorRGBA.Green, null);
-        Geometry geom4 = makeGeom.makeBox(0.3f, ColorRGBA.Green, null);
 
-        geom1.setLocalTranslation(arr[0], 0.5f, arr[2]);
-        geom2.setLocalTranslation(arr[0], 0.5f, arr[3]);
-        geom3.setLocalTranslation(arr[1], 0.5f, arr[2]);
-        geom4.setLocalTranslation(arr[1], 0.5f, arr[3]);
-
-        rootNode.attachChild(geom1);
-        rootNode.attachChild(geom2);
-        rootNode.attachChild(geom3);
-        rootNode.attachChild(geom4);
-
+        //float[] arr = custMath.getBoardDimension(board);
+        
         custMath.clearBoxVector();
         custMath.setActive();
         custMath.setTarget();
         custMath.makeGrid();
         Vector3f[] boxLocations = custMath.getBoxVector();
-        
-        
+
         //Node boxNode = new Node();
         
+        if(boardNode.hasChild(boxNode)) {
+            boardNode.detachChild(boxNode);
+            boxNode.detachAllChildren();
+            //boxNode.removeFromParent();
+        }
+        
+        /*
         if(rootNode.hasChild(boxNode)) {
             rootNode.detachChild(boxNode);
             boxNode.detachAllChildren();
             //boxNode.removeFromParent();
         }
+        */
         
         for (Vector3f oneBox : boxLocations) {
             if (oneBox != null) {
@@ -237,7 +253,7 @@ public class Main extends SimpleApplication {
             }
         }
         
-        rootNode.attachChild(boxNode);
+        boardNode.attachChild(boxNode);
         
     }
 
