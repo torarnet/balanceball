@@ -34,6 +34,8 @@ public class KeyInput {
         keyMaps.add("MoveLeft");
         inputManager.addMapping("MoveRight", new KeyTrigger(com.jme3.input.KeyInput.KEY_RIGHT));
         keyMaps.add("MoveRight");
+        inputManager.addMapping("Reset", new KeyTrigger(com.jme3.input.KeyInput.KEY_R));
+        keyMaps.add("Reset");
     }
     
     public List<String> getMappings() {

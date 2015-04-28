@@ -23,7 +23,7 @@ public class CustomMath {
     float gridElmSize = 0.2f;
     float[] boardDims;
     Vector3f worldTrans;
-    Vector3f[] boxLocations = new Vector3f[maxSize*maxSize];
+    Vector3f[] boxLocations;
 
     public void setActive() {
         int counter = 0;
@@ -90,6 +90,7 @@ public class CustomMath {
     }
 
     public void makeGrid() {
+        boxLocations = new Vector3f[maxSize*maxSize];
         //boxGrid = new float[4][4];
         //maxSize = 16;
         float lengthX = boardDims[1] - boardDims[0];
@@ -99,12 +100,17 @@ public class CustomMath {
         gridElmSize = lengthX / maxSize;
         System.out.println(gridElmSize);
 
+        float radiusBoardX=lengthX/2;
+        float radiusBoardZ=lengthZ/2;
+        
         int gridCounter = 0;
         for (int i = 0; i < maxSize; i++) {
             for (int j = 0; j < maxSize; j++) {
                 if (active[i][j] == true) {
-                    boxLocations[gridCounter] = new Vector3f(i*gridElmSize,
-                            worldTrans.getY(),j*gridElmSize);
+                            float factorX = gridElmSize*(i+1)-(lengthX/2)-(lengthX/maxSize/2);
+                            float factorZ = gridElmSize*(j+1)-(lengthX/2)-(lengthX/maxSize/2);
+                    boxLocations[gridCounter] = new Vector3f
+                            (factorX,worldTrans.getY()+0.5f,factorZ);
                     gridCounter++;
                 }
                 //boxGrid[i][j] = 
@@ -115,4 +121,14 @@ public class CustomMath {
             System.out.println(oneVector.getX()+" : "+oneVector.getZ());
         }
     }
+    
+    public Vector3f[] getBoxVector() {
+        return boxLocations;
+    }
+    
+    public void clearBoxVector() {
+        //boxLocations = new Vector3f[maxSize*maxSize];
+        boxLocations = null;
+    }
+    
 }

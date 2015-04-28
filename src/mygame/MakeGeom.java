@@ -107,7 +107,12 @@ public class MakeGeom {
         mat2.setColor("Specular", color.mult(0.1f)); // for shininess
         mat2.setFloat("Shininess", 0f); // [1,128] for shininess
 
-        geom3.setMaterial(mat2);
+        if (text!=null) {
+            Material mat3 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat3.setTexture("ColorMap",text);
+            geom3.setMaterial(mat3);
+        }
+        else geom3.setMaterial(mat2);
         
         return geom3;
     }
