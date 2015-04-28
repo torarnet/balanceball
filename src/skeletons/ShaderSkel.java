@@ -93,7 +93,7 @@ public class ShaderSkel extends SimpleApplication {
         mat.setColor("Specular", ColorRGBA.White);
         mat.setFloat("Shininess", 1.0f);
         // Load and set texture.
-        Texture tex = assetManager.loadTexture("Textures/boxtile.png");
+        Texture tex = assetManager.loadTexture("Textures/fire5.png");
         mat.setTexture("DiffuseMap", tex);
         
         Sphere s = new Sphere(50,50,1);

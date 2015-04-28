@@ -104,7 +104,8 @@ public class Main extends SimpleApplication {
 
     public void initTextures() {
         boardText = assetManager.loadTexture("Textures/board1.jpg");
-        sphereText = assetManager.loadTexture("Textures/abs1.png");
+        //sphereText = assetManager.loadTexture("Textures/abs1.png");
+        sphereText = assetManager.loadTexture("Textures/fire5.png");
     }
 
     public void initGeom() {
@@ -181,7 +182,8 @@ public class Main extends SimpleApplication {
     }
     
     public void test() {
-        float[] arr = new CustomMath().getBoardDimension(board);
+        CustomMath custMath = new CustomMath();
+        float[] arr = custMath.getBoardDimension(board);
         Geometry geom1 = makeGeom.makeBox(0.3f, ColorRGBA.Green, boardText);
         Geometry geom2 = makeGeom.makeBox(0.3f, ColorRGBA.Green, boardText);
         Geometry geom3 = makeGeom.makeBox(0.3f, ColorRGBA.Green, boardText);
@@ -196,6 +198,10 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(geom2);
         rootNode.attachChild(geom3);
         rootNode.attachChild(geom4);
+        
+        custMath.setActive();
+        custMath.setTarget();
+        custMath.makeGrid();
     }
 
     @Override

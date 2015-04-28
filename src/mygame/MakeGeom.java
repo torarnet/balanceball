@@ -31,8 +31,8 @@ public class MakeGeom {
     
     public Geometry makeSky(Texture text) { 
         Sphere s = new Sphere(20, 20, 30);
-        //Box b = new Box(30,30,30);
-        Geometry geom = new Geometry("Sphere", s);
+        Box b = new Box(30,30,30);
+        Geometry geom = new Geometry("Sphere", b);
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 

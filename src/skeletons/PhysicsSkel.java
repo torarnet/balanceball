@@ -248,7 +248,7 @@ public class PhysicsSkel extends SimpleApplication {
         Geometry geom = new Geometry("Box", b);
 
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture text = assetManager.loadTexture("Textures/tile4.png");
+        Texture text = assetManager.loadTexture("Textures/board3.png");
 
         mat.setTexture("ColorMap", text);
 

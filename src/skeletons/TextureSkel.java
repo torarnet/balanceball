@@ -213,12 +213,12 @@ public class TextureSkel extends SimpleApplication {
         Material mat = new Material(assetManager,
                 "Common/MatDefs/Misc/Unshaded.j3md");
         
-        Texture texture = assetManager.loadTexture("Textures/back1.jpg");
+        Texture texture = assetManager.loadTexture("Textures/abs1.png");
         // Set mode to repeat, so only the fractional part is considered when we move the texture
         // coordinates.
         texture.setWrap(Texture.WrapMode.Repeat);
         mat.setTexture("ColorMap",
-                assetManager.loadTexture("Textures/back1.jpg"));
+                assetManager.loadTexture("Textures/abs1.png"));
         mat.getAdditionalRenderState().
                             setFaceCullMode(RenderState.FaceCullMode.Off);
         
