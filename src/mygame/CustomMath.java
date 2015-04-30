@@ -10,29 +10,30 @@ import com.jme3.scene.Geometry;
 import java.util.Random;
 
 /**
+ * Generate a chosen grid with chosen amount of boxes to be placed on the board.
+ * Placement of boxes is random
  *
  * @author Tor Arne
  */
 public class CustomMath {
 
-    //int difficulty = 1;
     float[][] boxGrid;
+    // Sets the active places on grid
     boolean[][] active;
+    // Finds an empty place on grid at random and place target there
     boolean[][] target;
-    //float[][] boxGrid = new float[4][4];
-    //boolean[][] active = new boolean[4][4];
-    //boolean[][] target = new boolean[4][4];
     int maxSize;
     int amount;
     float gridElmSize;
-    //float gridElmSize = 0.2f;
     float[] boardDims;
     Vector3f worldTrans;
+    Vector3f targetCoords;
     Vector3f[] boxLocations;
+    Vector3f[][] boxLocations2;
 
     public CustomMath(Geometry board) {
-        this.maxSize=4;
-        this.amount=4;
+        this.maxSize = 4;
+        this.amount = 4;
         boxGrid = new float[maxSize][maxSize];
         active = new boolean[maxSize][maxSize];
         target = new boolean[maxSize][maxSize];
@@ -45,43 +46,51 @@ public class CustomMath {
      * amount is number of boxes to be created
      */
     public CustomMath(int maxSize, Geometry board, int amount) {
-        this.maxSize=maxSize;
-        this.amount=amount;
+        this.maxSize = maxSize;
+        this.amount = amount;
         boxGrid = new float[maxSize][maxSize];
         active = new boolean[maxSize][maxSize];
         target = new boolean[maxSize][maxSize];
         setBoardDimension(board);
     }
-    
+
     public void setVars(int maxSize, Geometry board, int amount) {
-        this.maxSize=maxSize;
-        this.amount=amount;
+        this.maxSize = maxSize;
+        this.amount = amount;
         boxGrid = new float[maxSize][maxSize];
         active = new boolean[maxSize][maxSize];
         target = new boolean[maxSize][maxSize];
         setBoardDimension(board);
     }
-    
-    public boolean isAmountTooBig() {
-        if (amount<maxSize*maxSize)return false;
-        else return true;
+
+    // Make sure the amount is not to many for the grid
+    public boolean isAmountValid() {
+        if (amount < maxSize * maxSize) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void setActive() {
-        active=new boolean[maxSize][maxSize];
+        active = new boolean[maxSize][maxSize];
         // counter restart the box placement if all points on grid are filled
         // stops the placement after max amount of boxes is reached
         int counter = 0;
         for (int i = 0; i < maxSize; i++) {
             for (int j = 0; j < maxSize; j++) {
-                if (counter<maxSize*maxSize && counter<amount) {
-                active[i][j] = new Random().nextBoolean();
-                if (active[i][j]==true)counter++;
-                System.out.println("place: " + i + " and " + j + " is " + active[i][j]);
+                if (counter < maxSize * maxSize && counter < amount) {
+                    active[i][j] = new Random().nextBoolean();
+                    if (active[i][j] == true) {
+                        counter++;
+                    }
+                    System.out.println("place: " + i + " and " + j + " is " + active[i][j]);
                 }
             }
         }
-        if (counter<amount && (!isAmountTooBig()))setActive();
+        if (counter < amount && (isAmountValid())) {
+            setActive();
+        }
     }
 
     public void setTarget() {
@@ -93,10 +102,12 @@ public class CustomMath {
             target[targetX][targetZ] = true;
             System.out.println(targetX + " and " + targetZ + " is " + target[targetX][targetZ]);
         } else {
-            if (!isAmountTooBig())setTarget();
+            if (isAmountValid()) {
+                setTarget();
+            }
         }
     }
-    
+
     // set boardDims as float[startx,endx,startz,endz]
     private void setBoardDimension(Geometry board) {
         worldTrans = board.getWorldTranslation();
@@ -114,43 +125,8 @@ public class CustomMath {
         boardDims = floatArray;
     }
 
-    // Return float[startx,endx,startz,endz]
-    /*
-    public float[] getBoardDimension(Geometry board) {
-        worldTrans = board.getWorldTranslation();
-
-        System.out.println(worldTrans.getX());
-        System.out.println(worldTrans.getY());
-        System.out.println(worldTrans.getZ());
-
-        BoundingBox box = (BoundingBox) board.getModelBound();
-        Vector3f boxSize = new Vector3f();
-        boxSize = box.getExtent(boxSize);
-
-        float[] floatArray = new float[4];
-        floatArray[0] = (worldTrans.getX() - boxSize.getX());
-        floatArray[1] = (worldTrans.getX() + boxSize.getX());
-        floatArray[2] = (worldTrans.getZ() - boxSize.getZ());
-        floatArray[3] = (worldTrans.getZ() + boxSize.getZ());
-
-
-
-        System.out.println(boxSize.getX());
-        System.out.println(boxSize.getY());
-        System.out.println(boxSize.getZ());
-
-        System.out.println(floatArray[0]);
-        System.out.println(floatArray[1]);
-        System.out.println(floatArray[2]);
-        System.out.println(floatArray[3]);
-
-        boardDims = floatArray;
-
-        return floatArray;
-    }
-    */
-    
     public void makeGrid() {
+        boxLocations2 = new Vector3f[maxSize][maxSize];
         boxLocations = new Vector3f[maxSize * maxSize];
         //boxGrid = new float[4][4];
         //maxSize = 16;
@@ -170,12 +146,16 @@ public class CustomMath {
                 if (active[i][j] == true) {
                     float factorX = gridElmSize * (i + 1) - (radiusX) - (radiusX / maxSize);
                     float factorZ = gridElmSize * (j + 1) - (radiusZ) - (radiusZ / maxSize);
-                    //float factorX = gridElmSize * (i + 1) - (lengthX / 2) - (lengthX / maxSize / 2);
-                    //float factorZ = gridElmSize * (j + 1) - (lengthX / 2) - (lengthX / maxSize / 2);
-                    boxLocations[gridCounter] = new Vector3f(factorX, worldTrans.getY() + 0.5f, factorZ);
+                    boxLocations[gridCounter] = new Vector3f(factorX, worldTrans.getY(), factorZ);
                     gridCounter++;
+
+                    boxLocations2[i][j] = new Vector3f(factorX, worldTrans.getY() + 0.5f, factorZ);
                 }
-                //boxGrid[i][j] = 
+                if (target[i][j] == true) {
+                    float factorX = gridElmSize * (i + 1) - (radiusX) - (radiusX / maxSize);
+                    float factorZ = gridElmSize * (j + 1) - (radiusZ) - (radiusZ / maxSize);
+                    targetCoords = new Vector3f(factorX, worldTrans.getY()+0.4f, factorZ);
+                }
             }
         }
         for (Vector3f oneVector : boxLocations) {
@@ -185,11 +165,43 @@ public class CustomMath {
         }
     }
 
+    public Vector3f getTargetCoords() {
+        return targetCoords;
+    }
+
     public Vector3f[] getBoxVector() {
         return boxLocations;
     }
 
     public void clearBoxVector() {
         boxLocations = null;
+    }
+
+    public Vector3f[][] getBoxVector2() {
+        return boxLocations2;
+    }
+
+    public void clearBoxVector2() {
+        boxLocations2 = null;
+    }
+
+    public int getMaxSize() {
+        return maxSize;
+    }
+
+    public void removeTargetAt(int x, int z) {
+        if (target[x][z] = true) {
+            target[x][z] = false;
+        } else {
+            System.out.println("Target not found at removeTargetAt");
+        }
+    }
+
+    public void removeAllTargets() {
+        target = null;
+        target = new boolean[maxSize][maxSize];
+    }
+
+    public void removeBoxAt(int x, int y) {
     }
 }
