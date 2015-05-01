@@ -53,7 +53,6 @@ public class Main extends SimpleApplication {
     DirectionalLight directional2;
     AnalogListener analogListener;
     ActionListener actionListener;
-    
     // Physics
     private BulletAppState bulletAppState;
     private RigidBodyControl[] boxControl;
@@ -62,7 +61,6 @@ public class Main extends SimpleApplication {
     private final Transform sphereStartTransform = new Transform(new Vector3f(0f, 3f, 0.5f));
     private float mouseY = 0f;
     private float mouseX = 0f;
-    
     final float RADIUS = 0.2f;
     final float BOXDIMENSION = 0.2f;
     float cameraMove = 0;
@@ -95,7 +93,11 @@ public class Main extends SimpleApplication {
         makeScene();
         initPhysics();
         initMouse();
-        
+        setInitialPhysics();
+        makeBoxGrid();
+        setBoxesToPhysics();
+        setGoalToPhysics();
+
         rootNode.attachChild(board);
         rootNode.attachChild(sky);
         rootNode.attachChild(ball);
@@ -104,7 +106,7 @@ public class Main extends SimpleApplication {
         //rootNode.attachChild(boxes[2]);
         rootNode.attachChild(goal);
 
-        test();
+        //test();
 
     }
 
@@ -150,17 +152,11 @@ public class Main extends SimpleApplication {
     }
 
     public void initGeom() {
-        //boxes = makeBoxes();
-        //ball = makeBall();
-        //board = makeBoard();
-        //sky = makeSky();
-
         sky = makeGeom.makeSky(sphereText);
         board = makeGeom.makeBoard(boardText);
         boxes = makeGeom.makeBoxes(5, 0.2f, ColorRGBA.Blue, null);
         ball = makeGeom.makeBall(RADIUS, ColorRGBA.Red);
         goal = makeGeom.makeGoal(ColorRGBA.Yellow);
-
     }
 
     public void addLights() {
@@ -212,11 +208,14 @@ public class Main extends SimpleApplication {
         actionListener = new ActionListener() {
             public void onAction(String name, boolean isPressed, float tpf) {
                 if (name.equals("Reset") && isPressed) {
-                    resetScene();
-                    test();
+                    resetAllPhysics();
+                    makeBoxGrid();
+                    reInitiateAllPhysics();
+
                     //resetScene();
-                    resetBall();
-                    
+                    //test();
+                    //resetScene();
+                    //resetBall();
                     //sphereControl.setPhysicsLocation(new Vector3f(0,3,0.5f));
                 }
             }
@@ -224,6 +223,17 @@ public class Main extends SimpleApplication {
 
         addListener(keyMappings);
 
+    }
+
+    private void resetAllPhysics() {
+        resetBoxPhysics();
+        resetGoalPhysics();
+        resetBallPhysics();
+    }
+
+    private void reInitiateAllPhysics() {
+        setBoxesToPhysics();
+        setGoalToPhysics();
     }
 
     public void addListener(List<String> keyMappings) {
@@ -248,7 +258,7 @@ public class Main extends SimpleApplication {
         boardNode.attachChild(boxNode);
         rootNode.attachChild(boardNode);
     }
-    
+
     private void initPhysics() {
         bulletAppState = new BulletAppState();
         // add the bullet app state to the state manager, so that bullet is
@@ -264,28 +274,28 @@ public class Main extends SimpleApplication {
                 Vector3f camDir = cam.getDirection().clone();
                 Vector3f camLeft = cam.getLeft();
                 /*
-                if (keysPressed[com.jme3.input.KeyInput.KEY_LEFT]) {
-                    forceMove.addLocal(camLeft);
-                }
-                if (keysPressed[com.jme3.input.KeyInput.KEY_RIGHT]) {
-                    forceMove.subtractLocal(camLeft);
-                }
-                if (keysPressed[com.jme3.input.KeyInput.KEY_UP]) {
-                    forceMove.addLocal(camDir);
-                }
-                if (keysPressed[com.jme3.input.KeyInput.KEY_DOWN]) {
-                    forceMove.subtractLocal(camDir);
-                }
-                * */
+                 if (keysPressed[com.jme3.input.KeyInput.KEY_LEFT]) {
+                 forceMove.addLocal(camLeft);
+                 }
+                 if (keysPressed[com.jme3.input.KeyInput.KEY_RIGHT]) {
+                 forceMove.subtractLocal(camLeft);
+                 }
+                 if (keysPressed[com.jme3.input.KeyInput.KEY_UP]) {
+                 forceMove.addLocal(camDir);
+                 }
+                 if (keysPressed[com.jme3.input.KeyInput.KEY_DOWN]) {
+                 forceMove.subtractLocal(camDir);
+                 }
+                 * */
                 //forceMove.addLocal(mouseX,0,0);
                 forceMove.subtractLocal(camLeft.mult(mouseX));
                 forceMove.addLocal(camDir.mult(mouseY));
-                
+
                 //forceMove.addLocal(mouseX,0,0);
                 //forceMove.subtractLocal(0,0,mouseY);
-                
-                    forceMove.y = 0;
-                
+
+                forceMove.y = 0;
+
                 if (forceMove.length() > 0) {
                     forceMove.normalize();
                 }
@@ -299,47 +309,65 @@ public class Main extends SimpleApplication {
             }
         });
     }
-    
+
     private void initMouse() {
         inputManager.addRawInputListener(new RawInputAdapter() {
             @Override
             public void onMouseMotionEvent(MouseMotionEvent mme) {
-                mouseY = (float)mme.getDY();
-                mouseX = (float)mme.getDX();
+                mouseY = (float) mme.getDY();
+                mouseX = (float) mme.getDX();
             }
         });
 
     }
-    
-    public void setGeomToPhysics() {
+
+    public void setInitialPhysics() {
         CollisionShape groundCollisionShape = CollisionShapeFactory.createMeshShape(board);
         RigidBodyControl groundControl = new RigidBodyControl(groundCollisionShape, 0);
         board.addControl(groundControl);
         bulletAppState.getPhysicsSpace().add(groundControl);
 
-        
+
         CollisionShape sphereCollisionShape = new SphereCollisionShape(RADIUS);
         sphereControl = new RigidBodyControl(sphereCollisionShape, 3);
         ball.addControl(sphereControl);
         bulletAppState.getPhysicsSpace().add(sphereControl);
+
+        /*
+         CollisionShape goalCollisionShape = new SphereCollisionShape(RADIUS/2);
+         goalControl = new RigidBodyControl(goalCollisionShape, 0);
+         goal.addControl(goalControl);
+         bulletAppState.getPhysicsSpace().add(goalControl);
         
-        
-        CollisionShape goalCollisionShape = new SphereCollisionShape(RADIUS/2);
-        goalControl = new RigidBodyControl(goalCollisionShape, 0);
-        goal.addControl(goalControl);
-        bulletAppState.getPhysicsSpace().add(goalControl);
-        
+         boxControl = new RigidBodyControl[amount];
+         CollisionShape boxCollisionShape = new BoxCollisionShape(new Vector3f(BOXDIMENSION, BOXDIMENSION, BOXDIMENSION));
+         for (int i=0;i<boxControl.length;i++) {
+         boxControl[i] = new RigidBodyControl(boxCollisionShape, 0);
+         boxes[i].addControl(boxControl[i]);
+         bulletAppState.getPhysicsSpace().add(boxControl[i]);
+         }
+         */
+        //bulletAppState.getPhysicsSpace().add(boxControl);
+
+    }
+
+    public void setBoxesToPhysics() {
         boxControl = new RigidBodyControl[amount];
         CollisionShape boxCollisionShape = new BoxCollisionShape(new Vector3f(BOXDIMENSION, BOXDIMENSION, BOXDIMENSION));
-        for (int i=0;i<boxControl.length;i++) {
+        for (int i = 0; i < boxControl.length; i++) {
             boxControl[i] = new RigidBodyControl(boxCollisionShape, 0);
             boxes[i].addControl(boxControl[i]);
             bulletAppState.getPhysicsSpace().add(boxControl[i]);
         }
-        //bulletAppState.getPhysicsSpace().add(boxControl);
-        
     }
-    
+
+    public void setGoalToPhysics() {
+        CollisionShape goalCollisionShape = new SphereCollisionShape(RADIUS / 2);
+        goalControl = new RigidBodyControl(goalCollisionShape, 0);
+        goal.addControl(goalControl);
+        bulletAppState.getPhysicsSpace().add(goalControl);
+    }
+
     private void resetScene() {
         for (RigidBodyControl oneBoxCtrl : boxControl) {
             oneBoxCtrl.setEnabled(false);
@@ -349,15 +377,31 @@ public class Main extends SimpleApplication {
         resetRigidBodyControl(sphereControl, sphereStartTransform);
         goalControl.setEnabled(false);
         resetRigidBodyControl(goalControl,
-                new Transform(goalControl.getPhysicsLocation(),goalControl.getPhysicsRotation(Quaternion.IDENTITY)));
+                new Transform(goalControl.getPhysicsLocation(), goalControl.getPhysicsRotation(Quaternion.IDENTITY)));
+        mouseY = 0;
+        mouseX = 0;
+    }
+
+    private void resetBoxPhysics() {
+        for (RigidBodyControl oneBoxCtrl : boxControl) {
+            oneBoxCtrl.setEnabled(false);
+            //resetRigidBodyControl(oneBoxCtrl,new Transform(oneBoxCtrl.getPhysicsLocation(),oneBoxCtrl.getPhysicsRotation(Quaternion.IDENTITY)));
+        }
+    }
+
+    private void resetGoalPhysics() {
+        goalControl.setEnabled(false);
+    }
+
+    private void resetBallPhysics() {
+        sphereControl.setPhysicsLocation(Vector3f.UNIT_Y);
+        
+        sphereControl.setLinearVelocity(Vector3f.ZERO);
+        sphereControl.setAngularVelocity(Vector3f.ZERO);
         mouseY=0;
         mouseX=0;
     }
-    
-    private void resetBall() {
-        sphereControl.setPhysicsLocation(Vector3f.UNIT_Y);
-    }
-    
+
     private void resetRigidBodyControl(RigidBodyControl control, Transform startTransform) {
         control.setPhysicsLocation(startTransform.getTranslation());
         control.setPhysicsRotation(startTransform.getRotation());
@@ -370,19 +414,66 @@ public class Main extends SimpleApplication {
         control.activate();
     }
 
-    public void test() {
-
-        //float[] arr = custMath.getBoardDimension(board);
-
-        boxes=null;
-        boxes = new Geometry[maxSize*maxSize];
-        custMath.clearBoxVector();
+    public void makeBoxGrid() {
+        boxes = null;
+        boxes = new Geometry[maxSize * maxSize];
+        //custMath.clearBoxVector();
         custMath.clearBoxVector2();
         custMath.removeAllTargets();
         custMath.setActive();
         custMath.setTarget();
         custMath.makeGrid();
-        Vector3f[] boxLocations = custMath.getBoxVector();
+        //Vector3f[] boxLocations = custMath.getBoxVector();
+        Vector3f[][] boxLocations2 = custMath.getBoxVector2();
+
+        if (boardNode.hasChild(boxNode)) {
+            boardNode.detachChild(boxNode);
+            boxNode.detachAllChildren();
+            //boxNode.removeFromParent();
+        }
+
+        int boxCounter = 0;
+        for (int i = 0; i < custMath.getMaxSize(); i++) {
+            for (int j = 0; j < custMath.getMaxSize(); j++) {
+                if (boxLocations2[i][j] != null) {
+                    //boxes = makeGeom.makeBoxes(16, 0.2f, ColorRGBA.Blue, boxText);
+
+                    Geometry oneGeom = makeGeom.makeBox(0.2f, ColorRGBA.Blue, boxText);
+                    oneGeom.setLocalTranslation(boxLocations2[i][j]);
+                    oneGeom.setUserData("PositionX", i);
+                    oneGeom.setUserData("PositionZ", j);
+                    boxes[boxCounter] = oneGeom;
+
+                    System.out.println(boxCounter);
+                    if (boxes[boxCounter] != null) {
+                        boxNode.attachChild(boxes[boxCounter]);
+                    }
+                    boxCounter++;
+                }
+            }
+        }
+        goal.setLocalTranslation(custMath.getTargetCoords());
+
+
+        //setGeomToPhysics();
+
+        boardNode.attachChild(boxNode);
+
+    }
+
+    public void test() {
+
+        //float[] arr = custMath.getBoardDimension(board);
+
+        boxes = null;
+        boxes = new Geometry[maxSize * maxSize];
+        //custMath.clearBoxVector();
+        custMath.clearBoxVector2();
+        custMath.removeAllTargets();
+        custMath.setActive();
+        custMath.setTarget();
+        custMath.makeGrid();
+        //Vector3f[] boxLocations = custMath.getBoxVector();
         Vector3f[][] boxLocations2 = custMath.getBoxVector2();
 
         //Node boxNode = new Node();
@@ -404,20 +495,22 @@ public class Main extends SimpleApplication {
          */
 
         //System.out.println(boxLocations2[0][0].getX());
-        int boxCounter=0;
+        int boxCounter = 0;
         for (int i = 0; i < custMath.getMaxSize(); i++) {
             for (int j = 0; j < custMath.getMaxSize(); j++) {
                 if (boxLocations2[i][j] != null) {
                     //boxes = makeGeom.makeBoxes(16, 0.2f, ColorRGBA.Blue, boxText);
-                    
+
                     Geometry oneGeom = makeGeom.makeBox(0.2f, ColorRGBA.Blue, boxText);
                     oneGeom.setLocalTranslation(boxLocations2[i][j]);
                     oneGeom.setUserData("PositionX", i);
                     oneGeom.setUserData("PositionZ", j);
-                    boxes[boxCounter]=oneGeom;
-                    
+                    boxes[boxCounter] = oneGeom;
+
                     System.out.println(boxCounter);
-                    if (boxes[boxCounter]!=null)boxNode.attachChild(boxes[boxCounter]);
+                    if (boxes[boxCounter] != null) {
+                        boxNode.attachChild(boxes[boxCounter]);
+                    }
                     boxCounter++;
                 }
             }
@@ -425,8 +518,8 @@ public class Main extends SimpleApplication {
         goal.setLocalTranslation(custMath.getTargetCoords());
 
 
-        setGeomToPhysics();
-        
+        //setGeomToPhysics();
+
         boardNode.attachChild(boxNode);
 
     }
