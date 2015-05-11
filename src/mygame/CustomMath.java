@@ -100,12 +100,29 @@ public class CustomMath {
         targetZ = new Random().nextInt(maxSize);
         if (active[targetX][targetZ] == false) {
             target[targetX][targetZ] = true;
+            setTargetCoords(targetX, targetZ);
             System.out.println(targetX + " and " + targetZ + " is " + target[targetX][targetZ]);
         } else {
             if (isAmountValid()) {
                 setTarget();
             }
         }
+    }
+
+    private void setTargetCoords(int targetX, int targetZ) {
+        float lengthX = boardDims[1] - boardDims[0];
+        float lengthZ = boardDims[3] - boardDims[2];
+        System.out.println(lengthX);
+        System.out.println(lengthZ);
+        gridElmSize = lengthX / maxSize;
+        System.out.println(gridElmSize);
+
+        float radiusX = lengthX / 2;
+        float radiusZ = lengthZ / 2;
+
+        float factorX = gridElmSize * (targetX + 1) - (radiusX) - (radiusX / maxSize);
+        float factorZ = gridElmSize * (targetZ + 1) - (radiusZ) - (radiusZ / maxSize);
+        targetCoords = new Vector3f(factorX, worldTrans.getY() + 0.4f, factorZ);
     }
 
     // set boardDims as float[startx,endx,startz,endz]
@@ -154,7 +171,7 @@ public class CustomMath {
                 if (target[i][j] == true) {
                     float factorX = gridElmSize * (i + 1) - (radiusX) - (radiusX / maxSize);
                     float factorZ = gridElmSize * (j + 1) - (radiusZ) - (radiusZ / maxSize);
-                    targetCoords = new Vector3f(factorX, worldTrans.getY()+0.4f, factorZ);
+                    targetCoords = new Vector3f(factorX, worldTrans.getY() + 0.4f, factorZ);
                 }
             }
         }
@@ -202,6 +219,11 @@ public class CustomMath {
         target = new boolean[maxSize][maxSize];
     }
 
-    public void removeBoxAt(int x, int y) {
+    public void removeBoxAt(int x, int z) {
+        if (active[x][z] = true) {
+            active[x][z] = false;
+        } else {
+            System.out.println("Box not found at removeBoxAt");
+        }
     }
 }

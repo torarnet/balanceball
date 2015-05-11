@@ -4,11 +4,15 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.PhysicsTickListener;
+import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
+import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
+import com.jme3.font.BitmapText;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.event.MouseMotionEvent;
@@ -21,6 +25,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
 import java.util.List;
@@ -59,6 +64,7 @@ public class Main extends SimpleApplication {
     private RigidBodyControl sphereControl;
     private RigidBodyControl goalControl;
     private final Transform sphereStartTransform = new Transform(new Vector3f(0f, 3f, 0.5f));
+    BitmapText hudText;
     private float mouseY = 0f;
     private float mouseX = 0f;
     final float RADIUS = 0.2f;
@@ -67,6 +73,7 @@ public class Main extends SimpleApplication {
     private boolean[] keysPressed = new boolean[0xff];
     private int amount;
     private int maxSize;
+    private float score = 0.0f;
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -97,6 +104,7 @@ public class Main extends SimpleApplication {
         makeBoxGrid();
         setBoxesToPhysics();
         setGoalToPhysics();
+        makeHud();
 
         rootNode.attachChild(board);
         rootNode.attachChild(sky);
@@ -349,6 +357,57 @@ public class Main extends SimpleApplication {
          */
         //bulletAppState.getPhysicsSpace().add(boxControl);
 
+        bulletAppState.getPhysicsSpace().addCollisionListener(new PhysicsCollisionListener() {
+            public void collision(PhysicsCollisionEvent event) {
+                Spatial a = event.getNodeA();
+                Spatial b = event.getNodeB();
+                PhysicsCollisionObject objectA = event.getObjectA();
+                PhysicsCollisionObject objectB = event.getObjectB();
+                /*if (((objectA == sphereControl) && (objectB == boxControl))
+                 || ((objectA == boxControl) && (objectB == sphereControl))) {
+                 setRandomColor(a);
+                 Vector3f normalWorldOnB = event.getNormalWorldOnB();
+                 Vector3f positionWorldOnB = event.getPositionWorldOnB();
+                 lineMesh.updatePoints(positionWorldOnB, new Vector3f(positionWorldOnB).addLocal(normalWorldOnB));
+                 }*/
+
+                if (((objectA == sphereControl) && (objectB == goalControl))
+                        || ((objectA == goalControl) && (objectB == sphereControl))) {
+                    moveTarget();
+                }
+
+                for (RigidBodyControl oneBoxCtrl : boxControl) {
+                    if (((objectA == oneBoxCtrl) && (objectB == sphereControl))) {
+                    System.out.println(a.getUserData("PositionX"));
+                    System.out.println(a.getUserData("PositionZ"));
+                    a.removeFromParent();
+                    removeBox(Integer.parseInt(a.getUserData("PositionX")
+                            .toString()),
+                            Integer.parseInt(a.getUserData("PositionZ")
+                            .toString()),oneBoxCtrl);
+                }
+                    if (((objectA == sphereControl) && (objectB == oneBoxCtrl))) {
+                    System.out.println(b.getUserData("PositionX"));
+                    System.out.println(b.getUserData("PositionZ"));
+                    b.removeFromParent();
+                    removeBox(Integer.parseInt(b.getUserData("PositionX")
+                            .toString()),
+                            Integer.parseInt(b.getUserData("PositionZ")
+                            .toString()),oneBoxCtrl);
+                }
+                }
+
+            }
+
+            void setRandomColor(Spatial spatial) {
+                if (spatial instanceof Geometry) {
+                    Geometry aGeom = (Geometry) spatial;
+                    ColorRGBA randomColor = new ColorRGBA((float) Math.random(), (float) Math.random(), (float) Math.random(), 1f);
+                    aGeom.getMaterial().setColor("Diffuse", randomColor);
+                }
+            }
+        });
+
     }
 
     public void setBoxesToPhysics() {
@@ -395,11 +454,11 @@ public class Main extends SimpleApplication {
 
     private void resetBallPhysics() {
         sphereControl.setPhysicsLocation(Vector3f.UNIT_Y);
-        
+
         sphereControl.setLinearVelocity(Vector3f.ZERO);
         sphereControl.setAngularVelocity(Vector3f.ZERO);
-        mouseY=0;
-        mouseX=0;
+        mouseY = 0;
+        mouseX = 0;
     }
 
     private void resetRigidBodyControl(RigidBodyControl control, Transform startTransform) {
@@ -459,6 +518,21 @@ public class Main extends SimpleApplication {
 
         boardNode.attachChild(boxNode);
 
+    }
+
+    public void moveTarget() {
+        score += 50;
+        resetGoalPhysics();
+        custMath.removeAllTargets();
+        custMath.setTarget();
+        goal.setLocalTranslation(custMath.getTargetCoords());
+        setGoalToPhysics();
+    }
+
+    public void removeBox(int x, int z,RigidBodyControl control) {
+        score -= 100;
+        control.setEnabled(false);
+        custMath.removeBoxAt(x, z);        
     }
 
     public void test() {
@@ -524,12 +598,26 @@ public class Main extends SimpleApplication {
 
     }
 
+    public void makeHud() {
+        hudText = new BitmapText(guiFont, false);
+        hudText.setSize(guiFont.getCharSet().getRenderedSize() * 2);      // font size
+        hudText.setColor(ColorRGBA.Red);                             // font color
+        //hudText.setText("Current Score: "+score);             // the text
+        hudText.setText("Current Score: " + String.format("%.2f", score));
+        //hudText.setLocalTranslation(300, hudText.getLineHeight(), 0); // position
+        hudText.setLocalTranslation(0, settings.getHeight(), 0); // position
+        guiNode.attachChild(hudText);
+    }
+
     @Override
     public void simpleUpdate(float tpf) {
         //TODO: add update code
         //cameraMove+=cameraMove*tpf;
         //moveCamera();
         inputManager.setCursorVisible(false);
+        //hudText.setText("Current Score: "+score); 
+        hudText.setText("Current Score: " + String.format("%.2f", score));
+        score -= 5 * tpf;
     }
 
     @Override
