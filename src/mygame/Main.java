@@ -29,7 +29,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
 import java.util.List;
-import util.RawInputAdapter;
+import util.*;
 
 /**
  * Balance Ball Main Application Class
@@ -38,6 +38,7 @@ import util.RawInputAdapter;
  */
 public class Main extends SimpleApplication {
 
+    // Geometry, Textures and Nodes
     Geometry[] boxes;
     Geometry ball;
     Geometry board;
@@ -45,14 +46,18 @@ public class Main extends SimpleApplication {
     Geometry goal;
     Node boxNode;
     Node boardNode;
+    Node explosionNode;
     Texture boardText;
     Texture sphereText;
     Texture boxText;
+    // Custom classes and other classes
     MakeGeom makeGeom;
     Lights lights;
     CustomMesh mesh;
     KeyInput keyInputs;
     CustomMath custMath;
+    BitmapText hudText;
+    // Lights
     AmbientLight ambient;
     DirectionalLight directional;
     DirectionalLight directional2;
@@ -64,7 +69,7 @@ public class Main extends SimpleApplication {
     private RigidBodyControl sphereControl;
     private RigidBodyControl goalControl;
     private final Transform sphereStartTransform = new Transform(new Vector3f(0f, 3f, 0.5f));
-    BitmapText hudText;
+    // Vars
     private float mouseY = 0f;
     private float mouseX = 0f;
     final float RADIUS = 0.2f;
@@ -74,12 +79,17 @@ public class Main extends SimpleApplication {
     private int amount;
     private int maxSize;
     private float score = 0.0f;
+    private float explosionSize = 1;
+    private float explosionSpeed = 1;
+    private float rotY = 0;
+    private float innerTpf = 0;
+    float timeCount = 0;
 
     public static void main(String[] args) {
         Main app = new Main();
         AppSettings setting = new AppSettings(true);
         setting.setTitle("BalanceBall");
-        setting.setSettingsDialogImage("Interface/logo1.png");
+        setting.setSettingsDialogImage("Interface/logo2.png");
         //setting.setFrameRate(60);
         app.setSettings(setting);
         app.start();
@@ -109,18 +119,16 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(board);
         rootNode.attachChild(sky);
         rootNode.attachChild(ball);
-        //rootNode.attachChild(boxes[0]);
-        //rootNode.attachChild(boxes[1]);
-        //rootNode.attachChild(boxes[2]);
         rootNode.attachChild(goal);
 
+        interpolate();
         //test();
 
     }
 
     public void initVars() {
-        amount = 8;
-        maxSize = 4;
+        amount = 12;
+        maxSize = 6;
     }
 
     public void initClasses() {
@@ -219,7 +227,7 @@ public class Main extends SimpleApplication {
                     resetAllPhysics();
                     makeBoxGrid();
                     reInitiateAllPhysics();
-
+                    explosionNode.detachAllChildren();
                     //resetScene();
                     //test();
                     //resetScene();
@@ -262,7 +270,9 @@ public class Main extends SimpleApplication {
     public void makeScene() {
         boardNode = new Node();
         boxNode = new Node();
+        explosionNode = new Node();
 
+        boardNode.attachChild(explosionNode);
         boardNode.attachChild(boxNode);
         rootNode.attachChild(boardNode);
     }
@@ -363,13 +373,6 @@ public class Main extends SimpleApplication {
                 Spatial b = event.getNodeB();
                 PhysicsCollisionObject objectA = event.getObjectA();
                 PhysicsCollisionObject objectB = event.getObjectB();
-                /*if (((objectA == sphereControl) && (objectB == boxControl))
-                 || ((objectA == boxControl) && (objectB == sphereControl))) {
-                 setRandomColor(a);
-                 Vector3f normalWorldOnB = event.getNormalWorldOnB();
-                 Vector3f positionWorldOnB = event.getPositionWorldOnB();
-                 lineMesh.updatePoints(positionWorldOnB, new Vector3f(positionWorldOnB).addLocal(normalWorldOnB));
-                 }*/
 
                 if (((objectA == sphereControl) && (objectB == goalControl))
                         || ((objectA == goalControl) && (objectB == sphereControl))) {
@@ -378,33 +381,29 @@ public class Main extends SimpleApplication {
 
                 for (RigidBodyControl oneBoxCtrl : boxControl) {
                     if (((objectA == oneBoxCtrl) && (objectB == sphereControl))) {
-                    System.out.println(a.getUserData("PositionX"));
-                    System.out.println(a.getUserData("PositionZ"));
-                    a.removeFromParent();
-                    removeBox(Integer.parseInt(a.getUserData("PositionX")
-                            .toString()),
-                            Integer.parseInt(a.getUserData("PositionZ")
-                            .toString()),oneBoxCtrl);
-                }
+                        a.removeFromParent();
+                        removeBox(Integer.parseInt(a.getUserData("PositionX")
+                                .toString()),
+                                Integer.parseInt(a.getUserData("PositionZ")
+                                .toString()), oneBoxCtrl);
+                        Geometry explosion = makeGeom.explosionSphere(10, 50);
+                        explosion.setLocalTranslation(b.getLocalTranslation());
+                        boxNode.attachChild(explosion);
+                    }
                     if (((objectA == sphereControl) && (objectB == oneBoxCtrl))) {
-                    System.out.println(b.getUserData("PositionX"));
-                    System.out.println(b.getUserData("PositionZ"));
-                    b.removeFromParent();
-                    removeBox(Integer.parseInt(b.getUserData("PositionX")
-                            .toString()),
-                            Integer.parseInt(b.getUserData("PositionZ")
-                            .toString()),oneBoxCtrl);
-                }
+                        b.removeFromParent();
+                        removeBox(Integer.parseInt(b.getUserData("PositionX")
+                                .toString()),
+                                Integer.parseInt(b.getUserData("PositionZ")
+                                .toString()), oneBoxCtrl);
+
+                        Spatial explosion = b.clone();
+                        explosion.setMaterial(makeGeom.changeMat());
+                        explosionNode.attachChild(explosion);
+
+                    }
                 }
 
-            }
-
-            void setRandomColor(Spatial spatial) {
-                if (spatial instanceof Geometry) {
-                    Geometry aGeom = (Geometry) spatial;
-                    ColorRGBA randomColor = new ColorRGBA((float) Math.random(), (float) Math.random(), (float) Math.random(), 1f);
-                    aGeom.getMaterial().setColor("Diffuse", randomColor);
-                }
             }
         });
 
@@ -529,10 +528,10 @@ public class Main extends SimpleApplication {
         setGoalToPhysics();
     }
 
-    public void removeBox(int x, int z,RigidBodyControl control) {
+    public void removeBox(int x, int z, RigidBodyControl control) {
         score -= 100;
         control.setEnabled(false);
-        custMath.removeBoxAt(x, z);        
+        custMath.removeBoxAt(x, z);
     }
 
     public void test() {
@@ -609,11 +608,35 @@ public class Main extends SimpleApplication {
         guiNode.attachChild(hudText);
     }
 
+    public void interpolate() {
+        // All interpolators use the same alpha object.
+        // No delay, increase time of 2 seconds, no ramp, at 1 in 1 second,
+        // decrease time of 2 seconds, no ramp.
+        Alpha alpha = new Alpha(0, 2f, 0, 1, 2, 0, 1, 0, 0);
+
+        // Color interpolation from red to blue.
+        ColorInterpolatorControl colorInterp4 =
+                new ColorInterpolatorControl(alpha.clone(), new ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f),
+                new ColorRGBA(0.0f, 0.0f, 1.0f, 1.0f), "Ambient", true, true);
+        goal.addControl(colorInterp4);
+    }
+
     @Override
     public void simpleUpdate(float tpf) {
         //TODO: add update code
         //cameraMove+=cameraMove*tpf;
         //moveCamera();
+        if (timeCount > 2) {
+            explosionNode.detachAllChildren();
+            timeCount = 0;
+        }
+
+        innerTpf = tpf;
+        timeCount += tpf;
+
+        rotY += 4 * tpf;
+
+        goal.setLocalRotation(new Quaternion().normalizeLocal().fromAngleNormalAxis(rotY, Vector3f.UNIT_Y));
         inputManager.setCursorVisible(false);
         //hudText.setText("Current Score: "+score); 
         hudText.setText("Current Score: " + String.format("%.2f", score));
