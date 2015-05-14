@@ -5,7 +5,9 @@
 package mygame;
 
 import com.jme3.input.InputManager;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.input.event.KeyInputEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +38,10 @@ public class KeyInput {
         keyMaps.add("MoveRight");
         inputManager.addMapping("Reset", new KeyTrigger(com.jme3.input.KeyInput.KEY_R));
         keyMaps.add("Reset");
+        inputManager.addMapping("Pick", new KeyTrigger(com.jme3.input.KeyInput.KEY_P));
+        keyMaps.add("Pick");
+        inputManager.addMapping("PickDown", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        keyMaps.add("PickDown");
     }
     
     public List<String> getMappings() {

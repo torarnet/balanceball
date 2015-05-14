@@ -12,6 +12,8 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapText;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
@@ -20,7 +22,9 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
+import com.jme3.math.Ray;
 import com.jme3.math.Transform;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
@@ -28,6 +32,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
+import com.jme3.ui.Picture;
 import java.util.List;
 import util.*;
 
@@ -69,6 +74,13 @@ public class Main extends SimpleApplication {
     private RigidBodyControl sphereControl;
     private RigidBodyControl goalControl;
     private final Transform sphereStartTransform = new Transform(new Vector3f(0f, 3f, 0.5f));
+    // Picking
+    boolean moveEnabled = false;
+    boolean hasPickedObject = false;
+    Spatial pickedObject = null;
+    float objOffsetY = 0.3f;
+    boolean pickMode = false;
+    Node pickables;
     // Vars
     private float mouseY = 0f;
     private float mouseX = 0f;
@@ -116,7 +128,8 @@ public class Main extends SimpleApplication {
         setGoalToPhysics();
         makeHud();
 
-        rootNode.attachChild(board);
+        boardNode.attachChild(board);
+        //rootNode.attachChild(board);
         rootNode.attachChild(sky);
         rootNode.attachChild(ball);
         rootNode.attachChild(goal);
@@ -154,6 +167,7 @@ public class Main extends SimpleApplication {
         float deltaX = (float) Math.cos(cameraMove);
         float deltaZ = (float) Math.sin(cameraMove);
 
+        //cam.setLocation(new Vector3f(deltaX * 6, 7, -6 * deltaZ));
         cam.setLocation(new Vector3f(deltaX * 8, 7, -8 * deltaZ));
 
         cam.lookAt(new Vector3f(0, 1, 0), Vector3f.UNIT_Y);
@@ -217,6 +231,22 @@ public class Main extends SimpleApplication {
                     cameraMove += 3.0f * tpf;
                     moveCamera();
                 }
+                // Move object by calling placeObjAtContactPoint() if mouse moves
+                /*if (name.equals(MouseMoveLeft) || name.equals(MouseMoveRight)
+                        || name.equals(MouseMoveUp) || name.equals(MouseMoveDown)) {
+                    if (hasPickedObject && moveEnabled) {
+                        placeObjAtContactPoint();
+                    }
+                }*/
+                // Move object by calling placeObjAtContactPoint() if mouse moves
+                
+                /*
+                if (mouseX>0 || mouseY>0
+                        || mouseX<0 || mouseY<0) {
+                    if (hasPickedObject && moveEnabled) {
+                        placeObjAtContactPoint();
+                    }
+                }*/
 
             }
         };
@@ -233,6 +263,19 @@ public class Main extends SimpleApplication {
                     //resetScene();
                     //resetBall();
                     //sphereControl.setPhysicsLocation(new Vector3f(0,3,0.5f));
+                }
+                if (name.equals("Pick") && isPressed) {
+                    pickMode();
+                }
+                // Check if mouse key pressed
+                if (name.equals("PickDown")) {
+                    if (isPressed) {
+                        pick();
+                        moveEnabled = true;
+                    } else {
+                        unpick();
+                        moveEnabled = false;
+                    }
                 }
             }
         };
@@ -334,6 +377,11 @@ public class Main extends SimpleApplication {
             public void onMouseMotionEvent(MouseMotionEvent mme) {
                 mouseY = (float) mme.getDY();
                 mouseX = (float) mme.getDX();
+                if (mme.getDX()!=0 || mme.getDY()!=0) {
+                    if (hasPickedObject && moveEnabled) {
+                        placeObjAtContactPoint();
+                    }
+                }
             }
         });
 
@@ -500,6 +548,7 @@ public class Main extends SimpleApplication {
                     oneGeom.setLocalTranslation(boxLocations2[i][j]);
                     oneGeom.setUserData("PositionX", i);
                     oneGeom.setUserData("PositionZ", j);
+                    oneGeom.setUserData("topParent", oneGeom);
                     boxes[boxCounter] = oneGeom;
 
                     System.out.println(boxCounter);
@@ -598,8 +647,36 @@ public class Main extends SimpleApplication {
     }
 
     public void makeHud() {
+        int width = settings.getWidth() / 3;
+        int height = settings.getHeight() / 4;
+        Picture hudPic = new Picture("Background");
+        hudPic.setImage(assetManager, "Textures/black2.png", true);
+        hudPic.setWidth(width);
+        hudPic.setHeight(height);
+        //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
+        hudPic.setPosition(0, settings.getHeight() - height);
+        guiNode.attachChild(hudPic);
+
+        int heartWidth = 40;
+        int heartHeight = 40;
+        Picture[] heartPic = new Picture[4];
+        heartPic[0] = new Picture("Heart");
+        heartPic[0].setImage(assetManager, "Textures/heart2.png", true);
+        heartPic[0].setWidth(heartWidth);
+        heartPic[0].setHeight(heartHeight);
+        heartPic[1] = (Picture) heartPic[0].clone();
+        heartPic[2] = (Picture) heartPic[0].clone();
+
+        //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
+        heartPic[0].setPosition(0, settings.getHeight() - 80);
+        heartPic[1].setPosition(heartWidth, settings.getHeight() - 80);
+        heartPic[2].setPosition(heartWidth * 2, settings.getHeight() - 80);
+        guiNode.attachChild(heartPic[0]);
+        guiNode.attachChild(heartPic[1]);
+        guiNode.attachChild(heartPic[2]);
+
         hudText = new BitmapText(guiFont, false);
-        hudText.setSize(guiFont.getCharSet().getRenderedSize() * 2);      // font size
+        hudText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
         hudText.setColor(ColorRGBA.Red);                             // font color
         //hudText.setText("Current Score: "+score);             // the text
         hudText.setText("Current Score: " + String.format("%.2f", score));
@@ -621,11 +698,136 @@ public class Main extends SimpleApplication {
         goal.addControl(colorInterp4);
     }
 
+    public void pickMode() {
+        bulletAppState.setEnabled(!(bulletAppState.isEnabled()));
+        pickMode = !pickMode;
+        inputManager.setCursorVisible(pickMode);
+        // All the objects that are pickable are added to this node.
+        pickables = new Node("pickables");
+        //pickables.attachChild(boxNode);
+        //pickables.attachChild(boxNode);
+        //rootNode.attachChild(pickables);
+    }
+
+    private CollisionResult pickIfAny() {
+        // Collision result holds the results from a pick operation.
+        CollisionResults results = new CollisionResults();
+
+        // Mouse coords.
+        Vector2f click2d = inputManager.getCursorPosition();
+        // Convert mouse coords to world space.
+        Vector3f click3d = cam.getWorldCoordinates(
+                new Vector2f(click2d.x, click2d.y), 0f).clone();
+        // Calculate direction of the mouse click in world space.
+        Vector3f direction = cam.getWorldCoordinates(
+                new Vector2f(click2d.x, click2d.y), 1f).subtractLocal(click3d);
+
+        // Ray casting is projecting a beam into scene graph
+        // based on where the mouse points. Makes it 3D, going into the depth
+        // Ray casting to find if any object intersects.
+        Ray ray = new Ray(click3d, direction);
+        boardNode.collideWith(ray, results);
+
+        CollisionResult closestCR = null;
+
+        if (results.size() > 0) {
+            // Only interested in the closest collision.
+            closestCR = results.getClosestCollision();
+            //System.out.println(closestCR.getContactPoint());
+        }
+
+        // Return closest pick result.
+        return closestCR;
+    }
+
+    private void pick() {
+        // We are only interested in the closest picking result.
+        CollisionResult result = pickIfAny();
+
+        if (result != null) {
+            hasPickedObject = true;
+            // The actual geometry we collided with, this can be any sub mesh
+            // of the model.
+            pickedObject = result.getGeometry();
+            // Therefore we use the dirty hack, and obtain the handle to the
+            // topmost parent for the sub mesh, so that we can manipulate the
+            // object as a whole.
+            // Here the name given earlier to the geometry is used
+            pickedObject = pickedObject.getUserData("topParent");
+            
+            try {
+                pickedObject.getControl(RigidBodyControl.class).setEnabled(false);
+            }catch (Exception e){
+                // No Physics found
+            };
+
+            if (pickedObject == null) {
+                hasPickedObject = false;
+                return;
+            }
+
+            // Remove the picked object from the pickable node, and add it
+            // directly to the root of the scene graph.
+            // This way it can be moved all around the scene graph.
+            pickedObject.removeFromParent();
+            rootNode.attachChild(pickedObject);
+            System.out.println("picked " + pickedObject.getName());
+        } else {
+            System.out.println("picked nothing");
+        }
+    }
+
+    private void unpick() {
+        // This method removes the picked object from the root of the scene
+        // graph, and adds it back to the pickable node.
+        if (!hasPickedObject) {
+            return;
+        }
+        // Puts the geometry back in the pickable node for further picking
+        System.out.println("released " + pickedObject.getName());
+        pickedObject.removeFromParent();
+        boxNode.attachChild(pickedObject);
+        try {
+                pickedObject.getControl(RigidBodyControl.class).setEnabled(true);
+            }catch (Exception e){
+                // No Physics found
+            };
+        //pickedObject.getControl(RigidBodyControl.class).setEnabled(true);
+        pickedObject = null;
+        hasPickedObject = false;
+    }
+
+    private void placeObjAtContactPoint() {
+        // When moving the picked object, we perform picking again, to find
+        // which object we collide with, and then we place the picked object
+        // on top of it. This gives a easy way to stack objects in the scene,
+        // and prevents the user from moving the object into "thin-air".
+
+        // This method follows the mouse using the 
+        // CollisionResult.getContactPoint. Then it sets the transformation
+        // using these coordinates, one little step at a time
+
+        // This is called each time the mouse moves (from onAnalog), 
+        // continually updating the pickedObject location using getContactPoint
+
+        // As long as we have the floor in the pickables variable, 
+        // it will register new mouse coordinates as long as we have
+        // the mouse over the floor geometry.
+
+        CollisionResult moveToPoint = pickIfAny();
+        if (moveToPoint != null) {
+            Vector3f loc = moveToPoint.getContactPoint();
+            loc.y += objOffsetY;
+            pickedObject.setLocalTranslation(loc);
+        }
+    }
+
     @Override
     public void simpleUpdate(float tpf) {
         //TODO: add update code
         //cameraMove+=cameraMove*tpf;
         //moveCamera();
+        
         if (timeCount > 2) {
             explosionNode.detachAllChildren();
             timeCount = 0;
@@ -637,7 +839,9 @@ public class Main extends SimpleApplication {
         rotY += 4 * tpf;
 
         goal.setLocalRotation(new Quaternion().normalizeLocal().fromAngleNormalAxis(rotY, Vector3f.UNIT_Y));
-        inputManager.setCursorVisible(false);
+        if (!pickMode) {
+            inputManager.setCursorVisible(false);
+        }
         //hudText.setText("Current Score: "+score); 
         hudText.setText("Current Score: " + String.format("%.2f", score));
         score -= 5 * tpf;

@@ -166,7 +166,7 @@ public class CustomMath {
                     boxLocations[gridCounter] = new Vector3f(factorX, worldTrans.getY(), factorZ);
                     gridCounter++;
 
-                    boxLocations2[i][j] = new Vector3f(factorX, worldTrans.getY() + 0.5f, factorZ);
+                    boxLocations2[i][j] = new Vector3f(factorX, worldTrans.getY() + 0.3f, factorZ);
                 }
                 if (target[i][j] == true) {
                     float factorX = gridElmSize * (i + 1) - (radiusX) - (radiusX / maxSize);
