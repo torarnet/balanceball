@@ -40,6 +40,8 @@ public class KeyInput {
         keyMaps.add("Reset");
         inputManager.addMapping("Pick", new KeyTrigger(com.jme3.input.KeyInput.KEY_P));
         keyMaps.add("Pick");
+        inputManager.addMapping("Pause", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+        keyMaps.add("Pause");
         inputManager.addMapping("PickDown", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
         keyMaps.add("PickDown");
     }

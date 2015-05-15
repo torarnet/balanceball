@@ -26,6 +26,8 @@ public class CustomMath {
     int amount;
     float gridElmSize;
     float[] boardDims;
+    float lengthX;
+    float lengthZ;
     Vector3f worldTrans;
     Vector3f targetCoords;
     Vector3f[] boxLocations;
@@ -72,20 +74,40 @@ public class CustomMath {
         }
     }
 
+    /*public void setActive() {
+     active = new boolean[maxSize][maxSize];
+     // counter restart the box placement if all points on grid are filled
+     // stops the placement after max amount of boxes is reached
+     int counter = 0;
+     for (int i = 0; i < maxSize; i++) {
+     for (int j = 0; j < maxSize; j++) {
+     if (counter < maxSize * maxSize && counter < amount) {
+     active[i][j] = new Random().nextBoolean();
+     if (active[i][j] == true) {
+     counter++;
+     }
+     System.out.println("place: " + i + " and " + j + " is " + active[i][j]);
+     }
+     }
+     }
+     if (counter < amount && (isAmountValid())) {
+     setActive();
+     }
+     }*/
     public void setActive() {
         active = new boolean[maxSize][maxSize];
-        // counter restart the box placement if all points on grid are filled
-        // stops the placement after max amount of boxes is reached
+
         int counter = 0;
-        for (int i = 0; i < maxSize; i++) {
-            for (int j = 0; j < maxSize; j++) {
-                if (counter < maxSize * maxSize && counter < amount) {
-                    active[i][j] = new Random().nextBoolean();
-                    if (active[i][j] == true) {
-                        counter++;
-                    }
-                    System.out.println("place: " + i + " and " + j + " is " + active[i][j]);
-                }
+
+        for (int i = 0; i < amount; i++) {
+            int i1 = 0;
+            int j1 = 0;
+            Random rand = new Random();
+            i1 = rand.nextInt(maxSize);
+            j1 = rand.nextInt(maxSize);
+            if (active[i1][j1] == false) {
+                active[i1][j1] = true;
+                counter++;
             }
         }
         if (counter < amount && (isAmountValid())) {
@@ -147,8 +169,10 @@ public class CustomMath {
         boxLocations = new Vector3f[maxSize * maxSize];
         //boxGrid = new float[4][4];
         //maxSize = 16;
-        float lengthX = boardDims[1] - boardDims[0];
-        float lengthZ = boardDims[3] - boardDims[2];
+        //float lengthX = boardDims[1] - boardDims[0];
+        //float lengthZ = boardDims[3] - boardDims[2];
+        lengthX = boardDims[1] - boardDims[0];
+        lengthZ = boardDims[3] - boardDims[2];
         System.out.println(lengthX);
         System.out.println(lengthZ);
         gridElmSize = lengthX / maxSize;
@@ -180,6 +204,39 @@ public class CustomMath {
                 System.out.println(oneVector.getX() + " : " + oneVector.getZ());
             }
         }
+    }
+
+    public Vector3f adjustPos(Vector3f vectorIn) {
+        Vector3f vectorOut = new Vector3f();
+        float adjustedX = round(vectorIn.getX(), gridElmSize);
+        float adjustedZ = round(vectorIn.getZ(), gridElmSize);
+        
+        float radiusX = lengthX / 2;
+        float radiusZ = lengthZ / 2;
+
+        //float factorX = gridElmSize * (adjustedX + 1) - (radiusX) - (radiusX / maxSize);
+        //float factorZ = gridElmSize * (adjustedZ + 1) - (radiusZ) - (radiusZ / maxSize);
+        float factorX = (adjustedX + 1) - (radiusX) - (radiusX / maxSize);
+        float factorZ = (adjustedZ + 1) - (radiusZ) - (radiusZ / maxSize);
+
+        vectorOut.setX(adjustedX-radiusX/maxSize);
+        vectorOut.setY(vectorIn.getY());
+        vectorOut.setZ(adjustedZ-radiusZ/maxSize);
+        
+        //float i = vectorIn.getX()/maxSize;
+        System.out.println(adjustedX);
+        System.out.println(adjustedZ);
+        
+        //System.out.println(vectorIn.getX());
+        //System.out.println(vectorIn.getZ());
+        //System.out.println(vectorOut.getX());
+        //System.out.println(vectorOut.getZ());
+        //System.out.println(gridElmSize);
+        return vectorOut;
+    }
+
+    float round(float i, float v) {
+        return Math.round(i / v) * v;
     }
 
     public Vector3f getTargetCoords() {
@@ -226,4 +283,23 @@ public class CustomMath {
             System.out.println("Box not found at removeBoxAt");
         }
     }
+
+    // x and y coords are not in world space, they are from active[i][j]matrix
+    public void addBoxAt(int x, int z) {
+        //if (active[x][z]==false) {
+        
+        active[x][z]=true;
+        float radiusX = lengthX / 2;
+        float radiusZ = lengthZ / 2;
+
+        float factorX = gridElmSize * (x + 1) - (radiusX) - (radiusX / maxSize);
+        float factorZ = gridElmSize * (z + 1) - (radiusZ) - (radiusZ / maxSize);
+
+
+
+        boxLocations2[x][z] = new Vector3f(factorX, worldTrans.getY() + 0.3f, factorZ);
+        //} 
+        
+    }
+    
 }
