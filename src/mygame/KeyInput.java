@@ -40,6 +40,14 @@ public class KeyInput {
         keyMaps.add("Reset");
         inputManager.addMapping("Pick", new KeyTrigger(com.jme3.input.KeyInput.KEY_P));
         keyMaps.add("Pick");
+        inputManager.addMapping("Instructions", new KeyTrigger(com.jme3.input.KeyInput.KEY_I));
+        keyMaps.add("Instructions");
+        inputManager.addMapping("Easy", new KeyTrigger(com.jme3.input.KeyInput.KEY_1));
+        keyMaps.add("Easy");
+        inputManager.addMapping("Medium", new KeyTrigger(com.jme3.input.KeyInput.KEY_2));
+        keyMaps.add("Medium");
+        inputManager.addMapping("Hard", new KeyTrigger(com.jme3.input.KeyInput.KEY_3));
+        keyMaps.add("Hard");
         inputManager.addMapping("Pause", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
         keyMaps.add("Pause");
         inputManager.addMapping("PickDown", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
@@ -56,11 +64,11 @@ public class KeyInput {
             public void onKeyEvent(KeyInputEvent kie) {
                 keysPressed[kie.getKeyCode() % keysPressed.length] = kie.isPressed() || kie.isRepeating();
 
-                if (kie.isPressed() && kie.getKeyCode() == com.jme3.input.KeyInput.KEY_1) {
+                /*if (kie.isPressed() && kie.getKeyCode() == com.jme3.input.KeyInput.KEY_1) {
                     System.out.println("Pressed Key 1");
                 } else if (kie.isPressed() && kie.getKeyCode() == com.jme3.input.KeyInput.KEY_2) {
                     //toggleDebug();
-                } 
+                } */
             }
         });
     }

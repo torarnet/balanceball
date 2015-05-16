@@ -85,8 +85,11 @@ public class Main extends SimpleApplication {
     // HUD
     Picture[] heartPic;
     Picture[] boxPic;
+    Picture instructions;
     BitmapText hudText;
+    BitmapText pauseText;
     BitmapText hudTextPickActive;
+    BitmapText finalScoreText;
     int hearts = 3;
     int picks = 3;
     // Vars
@@ -99,6 +102,7 @@ public class Main extends SimpleApplication {
     private int amount;
     private int maxSize;
     private float score = 0.0f;
+    private float lastScore = 0.0f;
     private float explosionSize = 1;
     private float explosionSpeed = 1;
     private float rotY = 0;
@@ -112,6 +116,7 @@ public class Main extends SimpleApplication {
         AppSettings setting = new AppSettings(true);
         setting.setTitle("BalanceBall");
         setting.setSettingsDialogImage("Interface/logo2.png");
+
         //setting.setFrameRate(60);
         app.setSettings(setting);
         app.start();
@@ -120,7 +125,10 @@ public class Main extends SimpleApplication {
     @Override
     public void simpleInitApp() {
 
-        initVars();
+        setDisplayFps(false); // to hide the FPS
+        setDisplayStatView(false); // to hide the statistics 
+
+        initVars(8,4);
         initClasses();
         initCamera();
         initTextures();
@@ -145,13 +153,15 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(goal);
 
         interpolate();
+
         //test();
 
     }
 
-    public void initVars() {
-        amount = 8;
-        maxSize = 4;
+    public void initVars(int i,int j) {
+        amount = i;
+        maxSize = j;
+        boxes = new Geometry[maxSize * maxSize];
     }
 
     public void initClasses() {
@@ -265,13 +275,21 @@ public class Main extends SimpleApplication {
         actionListener = new ActionListener() {
             public void onAction(String name, boolean isPressed, float tpf) {
                 if (name.equals("Reset") && isPressed) {
-                    resetAllPhysics();
-                    makeBoxGrid();
-                    reInitiateAllPhysics();
-                    resetLife();
-                    resetPicks();
-                    score = 0;
-                    explosionNode.detachAllChildren();
+
+                    /*
+                     resetAllPhysics();
+                     makeBoxGrid();
+                     reInitiateAllPhysics();
+                     resetLife();
+                     resetPicks();
+                     score = 0;
+                     explosionNode.detachAllChildren();
+                     */
+
+                    gameOver();
+                    /*if (guiNode.hasChild(finalScoreText)) {
+                     guiNode.detachChild(finalScoreText);
+                     }*/
                     //resetScene();
                     //test();
                     //resetScene();
@@ -283,6 +301,30 @@ public class Main extends SimpleApplication {
                 }
                 if (name.equals("Pause") && isPressed) {
                     pause();
+                }
+                if (name.equals("Instructions") && isPressed) {
+                    if (!paused) {
+                        pause();
+                    }
+                    showInstructions();
+                }
+                if (name.equals("Easy") && isPressed) {
+                    initVars(8,4);
+                    initGrid();
+                    resetAll();
+                    gameOver();
+                }
+                if (name.equals("Medium") && isPressed) {
+                    initVars(20,6);
+                    initGrid();
+                    resetAll();
+                    gameOver();
+                }
+                if (name.equals("Hard") && isPressed) {
+                    initVars(26,6);
+                    initGrid();
+                    resetAll();
+                    gameOver();
                 }
                 // Check if mouse key pressed
                 if (name.equals("PickDown")) {
@@ -299,6 +341,19 @@ public class Main extends SimpleApplication {
 
         addListener(keyMappings);
 
+    }
+
+    private void resetAll() {
+        resetAllPhysics();
+        makeBoxGrid();
+        reInitiateAllPhysics();
+        resetLife();
+        resetPicks();
+        score = 0;
+        explosionNode.detachAllChildren();
+        /*if (guiNode.hasChild(finalScoreText)) {
+         guiNode.detachChild(finalScoreText);
+         }*/
     }
 
     private void resetAllPhysics() {
@@ -695,6 +750,13 @@ public class Main extends SimpleApplication {
         guiNode.attachChild(heartPic[1]);
         guiNode.attachChild(heartPic[2]);
 
+        pauseText = new BitmapText(guiFont, false);
+        pauseText.setSize(30);      // font size
+        pauseText.setColor(ColorRGBA.Red);
+        pauseText.setText("PAUSED");
+        pauseText.setLocalTranslation(0, settings.getHeight() - 80, 0);
+        //guiNode.attachChild(pauseText);
+
         boxPic = new Picture[3];
         boxPic[0] = new Picture("BoxPic");
         boxPic[0].setImage(assetManager, "Textures/box2.png", true);
@@ -730,8 +792,15 @@ public class Main extends SimpleApplication {
         hudTextPickActive.setSize(30);      // font size
         hudTextPickActive.setColor(ColorRGBA.Red);
         hudTextPickActive.setText("Pick Mode Active");
-        hudTextPickActive.setLocalTranslation(settings.getWidth() - 240, settings.getHeight(), 0);
+        hudTextPickActive.setLocalTranslation(settings.getWidth() - 240, settings.getHeight() - 40, 0);
         //guiNode.attachChild(hudTextPickActive);
+
+        BitmapText hudTextInstruct = new BitmapText(guiFont, false);
+        hudTextInstruct.setSize(30);      // font size
+        hudTextInstruct.setColor(ColorRGBA.Red);
+        hudTextInstruct.setText("Press \" i \" for instructions");
+        hudTextInstruct.setLocalTranslation(settings.getWidth() - 330, 0 + 50, 0);
+        guiNode.attachChild(hudTextInstruct);
 
         hudText = new BitmapText(guiFont, false);
         hudText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
@@ -742,6 +811,21 @@ public class Main extends SimpleApplication {
         //hudText.setLocalTranslation(300, hudText.getLineHeight(), 0); // position
         hudText.setLocalTranslation(0, settings.getHeight() - 120, 0); // position
         guiNode.attachChild(hudText);
+
+        finalScoreText = new BitmapText(guiFont, false);
+        finalScoreText.setSize(24);
+        finalScoreText.setColor(ColorRGBA.Red);
+        finalScoreText.setText("Last Score: " + String.format("%.2f", lastScore));
+        finalScoreText.setLocalTranslation(settings.getWidth() - 220, settings.getHeight(), 0);
+        guiNode.attachChild(finalScoreText);
+
+        instructions = new Picture("Instructions");
+        instructions.setImage(assetManager, "Textures/instructions.png", true);
+        instructions.setWidth(width * 2);
+        instructions.setHeight(height * 2);
+        //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
+        instructions.setPosition(settings.getWidth() / 2 - (width), settings.getHeight() / 2 - (height));
+        //guiNode.attachChild(instructions);
     }
 
     public void interpolate() {
@@ -924,7 +1008,8 @@ public class Main extends SimpleApplication {
         if (hearts > 0) {
             hearts--;
             guiNode.detachChild(heartPic[hearts]);
-        } else {
+        }
+        if (hearts == 0) {
             gameOver();
         }
     }
@@ -944,6 +1029,14 @@ public class Main extends SimpleApplication {
         }
     }
 
+    public void showInstructions() {
+        if (guiNode.hasChild(instructions)) {
+            guiNode.detachChild(instructions);
+        } else {
+            guiNode.attachChild(instructions);
+        }
+    }
+
     public void resetPicks() {
         picks = 3;
         guiNode.attachChild(boxPic[0]);
@@ -952,9 +1045,12 @@ public class Main extends SimpleApplication {
     }
 
     public void gameOver() {
-    }
+        lastScore = score;
+        pause();
+        resetAll();
 
-    ;
+        finalScoreText.setText("Last Score: " + String.format("%.2f", lastScore));
+    }
 
     @Override
     public void simpleUpdate(float tpf) {
@@ -976,6 +1072,12 @@ public class Main extends SimpleApplication {
             guiNode.attachChild(hudTextPickActive);
         } else {
             guiNode.detachChild(hudTextPickActive);
+        }
+
+        if (paused) {
+            guiNode.attachChild(pauseText);
+        } else {
+            guiNode.detachChild(pauseText);
         }
 
         innerTpf = tpf;
