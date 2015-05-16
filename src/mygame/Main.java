@@ -61,7 +61,6 @@ public class Main extends SimpleApplication {
     CustomMesh mesh;
     KeyInput keyInputs;
     CustomMath custMath;
-    BitmapText hudText;
     // Lights
     AmbientLight ambient;
     DirectionalLight directional;
@@ -82,9 +81,14 @@ public class Main extends SimpleApplication {
     boolean pickMode = false;
     Node pickables;
     Geometry shadowPick;
+    Vector3f lastPlace;
     // HUD
     Picture[] heartPic;
+    Picture[] boxPic;
+    BitmapText hudText;
+    BitmapText hudTextPickActive;
     int hearts = 3;
+    int picks = 3;
     // Vars
     private float mouseY = 0f;
     private float mouseX = 0f;
@@ -146,7 +150,7 @@ public class Main extends SimpleApplication {
     }
 
     public void initVars() {
-        amount = 12;
+        amount = 8;
         maxSize = 4;
     }
 
@@ -265,6 +269,7 @@ public class Main extends SimpleApplication {
                     makeBoxGrid();
                     reInitiateAllPhysics();
                     resetLife();
+                    resetPicks();
                     score = 0;
                     explosionNode.detachAllChildren();
                     //resetScene();
@@ -662,7 +667,7 @@ public class Main extends SimpleApplication {
 
     public void makeHud() {
         int width = settings.getWidth() / 3;
-        int height = settings.getHeight() / 4;
+        int height = settings.getHeight() / 3;
         Picture hudPic = new Picture("Background");
         hudPic.setImage(assetManager, "Textures/black2.png", true);
         hudPic.setWidth(width);
@@ -683,20 +688,59 @@ public class Main extends SimpleApplication {
         heartPic[2] = (Picture) heartPic[0].clone();
 
         //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
-        heartPic[0].setPosition(0, settings.getHeight() - 80);
-        heartPic[1].setPosition(heartWidth, settings.getHeight() - 80);
-        heartPic[2].setPosition(heartWidth * 2, settings.getHeight() - 80);
+        heartPic[0].setPosition(heartWidth * 2, settings.getHeight() - 40);
+        heartPic[1].setPosition(heartWidth * 3, settings.getHeight() - 40);
+        heartPic[2].setPosition(heartWidth * 4, settings.getHeight() - 40);
         guiNode.attachChild(heartPic[0]);
         guiNode.attachChild(heartPic[1]);
         guiNode.attachChild(heartPic[2]);
 
+        boxPic = new Picture[3];
+        boxPic[0] = new Picture("BoxPic");
+        boxPic[0].setImage(assetManager, "Textures/box2.png", true);
+        boxPic[0].setWidth(heartWidth);
+        boxPic[0].setHeight(heartHeight);
+        boxPic[1] = (Picture) boxPic[0].clone();
+        boxPic[2] = (Picture) boxPic[0].clone();
+
+        //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
+        boxPic[0].setPosition(heartWidth * 2, settings.getHeight() - 80);
+        boxPic[1].setPosition(heartWidth * 3, settings.getHeight() - 80);
+        boxPic[2].setPosition(heartWidth * 4, settings.getHeight() - 80);
+        guiNode.attachChild(boxPic[0]);
+        guiNode.attachChild(boxPic[1]);
+        guiNode.attachChild(boxPic[2]);
+
+
+        BitmapText hudTextLife = new BitmapText(guiFont, false);
+        hudTextLife.setSize(30);      // font size
+        hudTextLife.setColor(ColorRGBA.Red);
+        hudTextLife.setText("Life:");
+        hudTextLife.setLocalTranslation(0, settings.getHeight(), 0);
+        guiNode.attachChild(hudTextLife);
+
+        BitmapText hudTextBox = new BitmapText(guiFont, false);
+        hudTextBox.setSize(30);      // font size
+        hudTextBox.setColor(ColorRGBA.Red);
+        hudTextBox.setText("Picks:");
+        hudTextBox.setLocalTranslation(0, settings.getHeight() - 40, 0);
+        guiNode.attachChild(hudTextBox);
+
+        hudTextPickActive = new BitmapText(guiFont, false);
+        hudTextPickActive.setSize(30);      // font size
+        hudTextPickActive.setColor(ColorRGBA.Red);
+        hudTextPickActive.setText("Pick Mode Active");
+        hudTextPickActive.setLocalTranslation(settings.getWidth() - 240, settings.getHeight(), 0);
+        //guiNode.attachChild(hudTextPickActive);
+
         hudText = new BitmapText(guiFont, false);
         hudText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+        hudText.setSize(20);
         hudText.setColor(ColorRGBA.Red);                             // font color
         //hudText.setText("Current Score: "+score);             // the text
         hudText.setText("Current Score: " + String.format("%.2f", score));
         //hudText.setLocalTranslation(300, hudText.getLineHeight(), 0); // position
-        hudText.setLocalTranslation(0, settings.getHeight(), 0); // position
+        hudText.setLocalTranslation(0, settings.getHeight() - 120, 0); // position
         guiNode.attachChild(hudText);
     }
 
@@ -714,21 +758,27 @@ public class Main extends SimpleApplication {
     }
 
     public void pickMode() {
-        bulletAppState.setEnabled(!(bulletAppState.isEnabled()));
-        pickMode = !pickMode;
-        inputManager.setCursorVisible(pickMode);
-        // All the objects that are pickable are added to this node.
-        pickables = new Node("pickables");
-        //pickables.attachChild(boxNode);
-        //pickables.attachChild(boxNode);
-        //rootNode.attachChild(pickables);
-        //shadowPick = makeGeom.makeBox(0.2f, ColorRGBA.White, null);
-        if (!pickMode)shadowPick.removeFromParent();
+        if (!paused) {
+            bulletAppState.setEnabled(!(bulletAppState.isEnabled()));
+            pickMode = !pickMode;
+            inputManager.setCursorVisible(pickMode);
+            // All the objects that are pickable are added to this node.
+            pickables = new Node("pickables");
+            //pickables.attachChild(boxNode);
+            //pickables.attachChild(boxNode);
+            //rootNode.attachChild(pickables);
+            //shadowPick = makeGeom.makeBox(0.2f, ColorRGBA.White, null);
+            if (!pickMode) {
+                shadowPick.removeFromParent();
+            }
+        }
     }
 
     public void pause() {
-        bulletAppState.setEnabled(!(bulletAppState.isEnabled()));
-        paused = !paused;
+        if (!pickMode) {
+            bulletAppState.setEnabled(!(bulletAppState.isEnabled()));
+            paused = !paused;
+        }
     }
 
     private CollisionResult pickIfAny() {
@@ -766,11 +816,12 @@ public class Main extends SimpleApplication {
         // We are only interested in the closest picking result.
         CollisionResult result = pickIfAny();
 
-        if (result != null) {
+        if (result != null && picks > 0) {
             hasPickedObject = true;
             // The actual geometry we collided with, this can be any sub mesh
             // of the model.
             pickedObject = result.getGeometry();
+            lastPlace = new Vector3f(pickedObject.getLocalTranslation());
             // Therefore we use the dirty hack, and obtain the handle to the
             // topmost parent for the sub mesh, so that we can manipulate the
             // object as a whole.
@@ -816,13 +867,25 @@ public class Main extends SimpleApplication {
         System.out.println("released " + pickedObject.getName());
         pickedObject.removeFromParent();
         boxNode.attachChild(pickedObject);
-        pickedObject.setLocalTranslation(custMath.adjustPos(pickedObject.getLocalTranslation()));
-        shadowPick.removeFromParent();
+        Vector3f newPlace = custMath.adjustPos(pickedObject.getLocalTranslation());
+        //if (!custMath.isElmTaken(pickedObject.getLocalTranslation())) {
+        if (!custMath.isElmTaken(newPlace)) {
+
+            pickedObject.setLocalTranslation(custMath.adjustPos(newPlace));
+            //pickedObject.setLocalTranslation(custMath.adjustPos(pickedObject.getLocalTranslation()));
+            custMath.addBoxAt(0, 0, pickedObject.getLocalTranslation());
+            shadowPick.removeFromParent();
+            removeOnePick();
+
+        } else {
+            pickedObject.setLocalTranslation(lastPlace);
+        }
+
         try {
             pickedObject.getControl(RigidBodyControl.class).setEnabled(true);
         } catch (Exception e) {
             // No Physics found
-        };
+        }
         //pickedObject.getControl(RigidBodyControl.class).setEnabled(true);
         pickedObject = null;
         hasPickedObject = false;
@@ -873,6 +936,21 @@ public class Main extends SimpleApplication {
         guiNode.attachChild(heartPic[2]);
     }
 
+    public void removeOnePick() {
+        if (picks > 0) {
+            picks--;
+            guiNode.detachChild(boxPic[picks]);
+        } else {
+        }
+    }
+
+    public void resetPicks() {
+        picks = 3;
+        guiNode.attachChild(boxPic[0]);
+        guiNode.attachChild(boxPic[1]);
+        guiNode.attachChild(boxPic[2]);
+    }
+
     public void gameOver() {
     }
 
@@ -892,6 +970,12 @@ public class Main extends SimpleApplication {
         if (ball.getLocalTranslation().getY() < -10) {
             resetBallPhysics();
             removeLife();
+        }
+
+        if (pickMode) {
+            guiNode.attachChild(hudTextPickActive);
+        } else {
+            guiNode.detachChild(hudTextPickActive);
         }
 
         innerTpf = tpf;

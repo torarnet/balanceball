@@ -32,6 +32,7 @@ public class CustomMath {
     Vector3f targetCoords;
     Vector3f[] boxLocations;
     Vector3f[][] boxLocations2;
+    Vector3f[][] gridCoords;
 
     public CustomMath(Geometry board) {
         this.maxSize = 4;
@@ -167,6 +168,7 @@ public class CustomMath {
     public void makeGrid() {
         boxLocations2 = new Vector3f[maxSize][maxSize];
         boxLocations = new Vector3f[maxSize * maxSize];
+        gridCoords = new Vector3f[maxSize][maxSize];
         //boxGrid = new float[4][4];
         //maxSize = 16;
         //float lengthX = boardDims[1] - boardDims[0];
@@ -197,6 +199,9 @@ public class CustomMath {
                     float factorZ = gridElmSize * (j + 1) - (radiusZ) - (radiusZ / maxSize);
                     targetCoords = new Vector3f(factorX, worldTrans.getY() + 0.4f, factorZ);
                 }
+                float factorX = gridElmSize * (i + 1) - (radiusX) - (radiusX / maxSize);
+                float factorZ = gridElmSize * (j + 1) - (radiusZ) - (radiusZ / maxSize);
+                gridCoords[i][j] = new Vector3f(factorX, worldTrans.getY() + 0.3f, factorZ);
             }
         }
         for (Vector3f oneVector : boxLocations) {
@@ -210,7 +215,7 @@ public class CustomMath {
         Vector3f vectorOut = new Vector3f();
         float adjustedX = round(vectorIn.getX(), gridElmSize);
         float adjustedZ = round(vectorIn.getZ(), gridElmSize);
-        
+
         float radiusX = lengthX / 2;
         float radiusZ = lengthZ / 2;
 
@@ -219,14 +224,15 @@ public class CustomMath {
         float factorX = (adjustedX + 1) - (radiusX) - (radiusX / maxSize);
         float factorZ = (adjustedZ + 1) - (radiusZ) - (radiusZ / maxSize);
 
-        vectorOut.setX(adjustedX-radiusX/maxSize);
+        vectorOut.setX(adjustedX - radiusX / maxSize);
         vectorOut.setY(vectorIn.getY());
-        vectorOut.setZ(adjustedZ-radiusZ/maxSize);
-        
+        vectorOut.setZ(adjustedZ - radiusZ / maxSize);
+
         //float i = vectorIn.getX()/maxSize;
         System.out.println(adjustedX);
         System.out.println(adjustedZ);
-        
+
+        //addBoxAt(0,0,vectorOut);
         //System.out.println(vectorIn.getX());
         //System.out.println(vectorIn.getZ());
         //System.out.println(vectorOut.getX());
@@ -285,21 +291,55 @@ public class CustomMath {
     }
 
     // x and y coords are not in world space, they are from active[i][j]matrix
-    public void addBoxAt(int x, int z) {
-        //if (active[x][z]==false) {
-        
-        active[x][z]=true;
-        float radiusX = lengthX / 2;
-        float radiusZ = lengthZ / 2;
+    public void addBoxAt(int x, int z, Vector3f vector) {
 
-        float factorX = gridElmSize * (x + 1) - (radiusX) - (radiusX / maxSize);
-        float factorZ = gridElmSize * (z + 1) - (radiusZ) - (radiusZ / maxSize);
+        for (int i = 0; i < maxSize; i++) {
+            for (int j = 0; j < maxSize; j++) {
+                if (vector != null) {
+                    Vector3f diff = gridCoords[i][j].subtract(vector);
+                    if (Math.abs(diff.getX()) < 0.1 && Math.abs(diff.getZ()) < 0.1) {
+                        if (!isThereBox(i, j)) {
+                            active[i][j] = true;
+                        }
+                        System.out.println("Active at X: " + i + " Z: " + j);
+                    }
+                }
+            }
+        }
 
-
-
-        boxLocations2[x][z] = new Vector3f(factorX, worldTrans.getY() + 0.3f, factorZ);
-        //} 
-        
     }
-    
+
+    public boolean isElmTaken(Vector3f vector) {
+        for (int i = 0; i < maxSize; i++) {
+            for (int j = 0; j < maxSize; j++) {
+                if (vector != null) {
+                    Vector3f diff = gridCoords[i][j].subtract(vector);
+                    if (Math.abs(diff.getX()) < 0.1 && Math.abs(diff.getZ()) < 0.1) {
+                        if (isThereBox(i, j) || isThereTarget(i,j)) {
+                            System.out.println("True");
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("False");
+        return false;
+    }
+
+    public boolean isThereBox(int x, int z) {
+        if (active[x][z] == true) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isThereTarget(int x, int z) {
+        if (target[x][z] == true) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
