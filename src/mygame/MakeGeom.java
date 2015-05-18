@@ -9,7 +9,6 @@ import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
-import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.shape.Box;
@@ -17,7 +16,8 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 
 /**
- *
+ * Creates the Geometry to be used in the game. Is called from main class
+ * 
  * @author Tor Arne
  */
 public class MakeGeom {
@@ -81,11 +81,10 @@ public class MakeGeom {
 
         geom.setMaterial(mat2);
 
-        //geom2.setLocalTransform(sphereStartTransform);
-
         return geom;
     }
 
+    // Make an array of boxes
     public Geometry[] makeBoxes(int amount, float size, ColorRGBA color, Texture text) {
         Geometry[] boxArray;
         boxArray = new Geometry[amount];
@@ -132,22 +131,13 @@ public class MakeGeom {
         mat2.setColor("Specular", color.mult(0.1f)); // for shininess
         mat2.setFloat("Shininess", 64f); // [1,128] for shininess
 
-        Material mat3 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        //mat3.setColor("Color", color);
-        //mat3.setBoolean("VertexColor", true);
-
-        // To show Vertices
-        //mat3.getAdditionalRenderState().setWireframe(true);
-
-        //mat3.getAdditionalRenderState().
-        //                  setFaceCullMode(RenderState.FaceCullMode.Off);
-
         geom3.setMaterial(mat2);
 
         return geom3;
     }
 
-    // Makes a box and expands it using custom shader for animation.
+    // Makes a sphere and expands it using custom shader for animation.
+    // Currently not used due to implementation problems. 
     public Geometry explosionSphere(float size, float speed) {
         Sphere s = new Sphere(10, 10, 0.5f);
         Geometry geom = new Geometry("Sphere", s);
@@ -156,14 +146,9 @@ public class MakeGeom {
                 "MatDefs/Grow.j3md");
         
         Texture texture = assetManager.loadTexture("Textures/fire5.png");
-        // Set mode to repeat, so only the fractional part is considered when we move the texture
-        // coordinates.
-        //s.scaleTextureCoordinates(new Vector2f(5,5));
-        //texture.setWrap(Texture.WrapMode.Repeat);
+        
         // Using shader variables for setting texture and scale factor
         mat.setTexture("Image", texture);
-        //mat.setFloat("Size", 10.0f);
-        //mat.setFloat("Speed", 20.0f);
         mat.setFloat("Size", size);
         mat.setFloat("Speed", speed);
 
@@ -172,37 +157,14 @@ public class MakeGeom {
         return geom;
     }
     
-    public Geometry explosionSphere2(float size, float speed) {
-        Sphere s = new Sphere(10, 10, 0.5f);
-        Geometry geom = new Geometry("Sphere", s);
-        // Uses the custom shader called Grow. This will scale the geometry
-        Material mat = new Material(assetManager,
-                "Common/MatDefs/Misc/Unshaded.j3md");
-        
-        Texture texture = assetManager.loadTexture("Textures/fire5.png");
-        // Set mode to repeat, so only the fractional part is considered when we move the texture
-        // coordinates.
-        //s.scaleTextureCoordinates(new Vector2f(5,5));
-        //texture.setWrap(Texture.WrapMode.Repeat);
-        // Using shader variables for setting texture and scale factor
-        mat.setTexture("ColorMap", texture);
-        //mat.setFloat("Size", 10.0f);
-        //mat.setFloat("Speed", 20.0f);
-        //mat.setFloat("Size", size);
-        //mat.setFloat("Speed", speed);
-
-        geom.setMaterial(mat);
-
-        return geom;
-    }
-    
+    // Is used to set material to that of an explosion
     public Material changeMat() {
         Material mat = new Material(assetManager,
                 "Common/MatDefs/Misc/Unshaded.j3md");
         
         Texture texture = assetManager.loadTexture("Textures/explosion2.png");
 
-        mat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);  // !
+        mat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
         
         mat.setTexture("ColorMap", texture);
 

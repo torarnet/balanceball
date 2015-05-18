@@ -65,6 +65,7 @@ public class Main extends SimpleApplication {
     AmbientLight ambient;
     DirectionalLight directional;
     DirectionalLight directional2;
+    // Listeners
     AnalogListener analogListener;
     ActionListener actionListener;
     // Physics
@@ -507,9 +508,9 @@ public class Main extends SimpleApplication {
                                 .toString()),
                                 Integer.parseInt(a.getUserData("PositionZ")
                                 .toString()), oneBoxCtrl);
-                        Geometry explosion = makeGeom.explosionSphere(10, 50);
-                        explosion.setLocalTranslation(b.getLocalTranslation());
-                        boxNode.attachChild(explosion);
+                        //Geometry explosion = makeGeom.explosionSphere(10, 50);
+                        //explosion.setLocalTranslation(b.getLocalTranslation());
+                        //boxNode.attachChild(explosion);
                     }
                     if (((objectA == sphereControl) && (objectB == oneBoxCtrl))) {
                         removeLife();

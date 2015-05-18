@@ -10,7 +10,8 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 
 /**
- *
+ * Creates ligthing, ambient and directional
+ * 
  * @author Tor Arne
  */
 public class Lights {

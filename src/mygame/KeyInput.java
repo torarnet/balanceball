@@ -14,7 +14,10 @@ import java.util.List;
 import util.RawInputAdapter;
 
 /**
- *
+ * Key Input class. Can be used to create key mappings to be returned to main
+ * class. Can also use this class to do stuff, but it has not access to main
+ * class' methods
+ * 
  * @author Tor Arne
  */
 public class KeyInput {
@@ -31,6 +34,7 @@ public class KeyInput {
         initInput();
     }
 
+    // Maps keys to ID's
     public void mapKeys() {
         inputManager.addMapping("MoveLeft", new KeyTrigger(com.jme3.input.KeyInput.KEY_LEFT));
         keyMaps.add("MoveLeft");
@@ -54,10 +58,12 @@ public class KeyInput {
         keyMaps.add("PickDown");
     }
     
+    // Returns all keymappings to a list of strings
     public List<String> getMappings() {
         return keyMaps;
     }
 
+    // Uses a raw listener
     private void initInput() {
         inputManager.addRawInputListener(new RawInputAdapter() {
             @Override
