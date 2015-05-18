@@ -120,6 +120,7 @@ public class CustomMath {
         if (active[targetX][targetZ] == false) {
             target[targetX][targetZ] = true;
             setTargetCoords(targetX, targetZ);
+            System.out.println("target: i: "+targetX+" j: "+targetZ+ " is true");
         } else {
             if (isAmountValid()) {
                 setTarget();
@@ -192,6 +193,7 @@ public class CustomMath {
                 // Place box in vector if active on this location is set
                 if (active[i][j] == true) {
                     // Add vector to array
+                    System.out.println("i: "+i+" j: "+j+ " is true");
                     boxLocations2[i][j] = new Vector3f(factorX, worldTrans.getY() + 0.3f, factorZ);
                 }
                 // Do the same for target.

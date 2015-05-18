@@ -86,6 +86,7 @@ public class Main extends SimpleApplication {
     // HUD
     Picture[] heartPic;
     Picture[] boxPic;
+    Picture hudPic;
     Picture instructions;
     BitmapText hudText;
     BitmapText pauseText;
@@ -115,9 +116,8 @@ public class Main extends SimpleApplication {
     public static void main(String[] args) {
         Main app = new Main();
         AppSettings setting = new AppSettings(true);
-        setting.setTitle("BalanceBall");
+        setting.setTitle("Balance Ball");
         setting.setSettingsDialogImage("Interface/logo2.png");
-
         //setting.setFrameRate(60);
         app.setSettings(setting);
         app.start();
@@ -658,70 +658,15 @@ public class Main extends SimpleApplication {
         custMath.removeBoxAt(x, z);
     }
 
-    public void test() {
-
-        //float[] arr = custMath.getBoardDimension(board);
-
-        boxes = null;
-        boxes = new Geometry[maxSize * maxSize];
-        //custMath.clearBoxVector();
-        custMath.clearBoxVector2();
-        custMath.removeAllTargets();
-        custMath.setActive();
-        custMath.setTarget();
-        custMath.makeGrid();
-        //Vector3f[] boxLocations = custMath.getBoxVector();
-        Vector3f[][] boxLocations2 = custMath.getBoxVector2();
-
-        //Node boxNode = new Node();
-
-        if (boardNode.hasChild(boxNode)) {
-            boardNode.detachChild(boxNode);
-            boxNode.detachAllChildren();
-            //boxNode.removeFromParent();
-        }
-
-        /* 
-         for (Vector3f oneBox : boxLocations) {
-         if (oneBox != null) {
-         Geometry oneGeom = makeGeom.makeBox(0.2f, ColorRGBA.Blue, boxText);
-         oneGeom.setLocalTranslation(oneBox);
-         boxNode.attachChild(oneGeom);
-         }
-         }
-         */
-
-        //System.out.println(boxLocations2[0][0].getX());
-        int boxCounter = 0;
-        for (int i = 0; i < custMath.getMaxSize(); i++) {
-            for (int j = 0; j < custMath.getMaxSize(); j++) {
-                if (boxLocations2[i][j] != null) {
-                    //boxes = makeGeom.makeBoxes(16, 0.2f, ColorRGBA.Blue, boxText);
-
-                    Geometry oneGeom = makeGeom.makeBox(0.2f, ColorRGBA.Blue, boxText);
-                    oneGeom.setLocalTranslation(boxLocations2[i][j]);
-                    oneGeom.setUserData("PositionX", i);
-                    oneGeom.setUserData("PositionZ", j);
-                    boxes[boxCounter] = oneGeom;
-
-                    System.out.println(boxCounter);
-                    if (boxes[boxCounter] != null) {
-                        boxNode.attachChild(boxes[boxCounter]);
-                    }
-                    boxCounter++;
-                }
-            }
-        }
-        goal.setLocalTranslation(custMath.getTargetCoords());
-
-
-        //setGeomToPhysics();
-
-        boardNode.attachChild(boxNode);
-
-    }
-
     public void makeHud() {
+        HudBuilder hudBuilder = new HudBuilder(assetManager,settings,guiNode,
+                guiFont);
+        hudPic = hudBuilder.initHudPic();
+        heartPic = hudBuilder.initHeartPics();
+        pauseText = hudBuilder.initPauseText();
+        boxPic = hudBuilder.initBoxText();
+        
+        /*
         int width = settings.getWidth() / 3;
         int height = settings.getHeight() / 3;
         Picture hudPic = new Picture("Background");
@@ -747,10 +692,19 @@ public class Main extends SimpleApplication {
         heartPic[0].setPosition(heartWidth * 2, settings.getHeight() - 40);
         heartPic[1].setPosition(heartWidth * 3, settings.getHeight() - 40);
         heartPic[2].setPosition(heartWidth * 4, settings.getHeight() - 40);
+        */
+        guiNode.attachChild(hudPic);
+        
         guiNode.attachChild(heartPic[0]);
         guiNode.attachChild(heartPic[1]);
         guiNode.attachChild(heartPic[2]);
+        
+        int heartWidth = 40;
+        int heartHeight = 40;
+        int width = settings.getWidth() / 3;
+        int height = settings.getHeight() / 3;
 
+        /*
         pauseText = new BitmapText(guiFont, false);
         pauseText.setSize(30);      // font size
         pauseText.setColor(ColorRGBA.Red);
@@ -770,6 +724,8 @@ public class Main extends SimpleApplication {
         boxPic[0].setPosition(heartWidth * 2, settings.getHeight() - 80);
         boxPic[1].setPosition(heartWidth * 3, settings.getHeight() - 80);
         boxPic[2].setPosition(heartWidth * 4, settings.getHeight() - 80);
+        */
+        
         guiNode.attachChild(boxPic[0]);
         guiNode.attachChild(boxPic[1]);
         guiNode.attachChild(boxPic[2]);
