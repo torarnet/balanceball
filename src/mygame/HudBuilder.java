@@ -40,6 +40,7 @@ public class HudBuilder {
         hudPic.setWidth(WIDTH/3);
         hudPic.setHeight(HEIGHT/3);
         hudPic.setPosition(0, HEIGHT - HEIGHT/3);
+        
         return hudPic;
     }
     
@@ -55,10 +56,6 @@ public class HudBuilder {
         heartPic[0].setPosition(ICONDIM * 2, HEIGHT - 40);
         heartPic[1].setPosition(ICONDIM * 3, HEIGHT - 40);
         heartPic[2].setPosition(ICONDIM * 4, HEIGHT - 40);
-        
-        //guiNode.attachChild(heartPic[0]);
-        //guiNode.attachChild(heartPic[1]);
-        //guiNode.attachChild(heartPic[2]);
         
         return heartPic;
         
@@ -82,8 +79,7 @@ public class HudBuilder {
         boxPic[0].setHeight(ICONDIM);
         boxPic[1] = (Picture) boxPic[0].clone();
         boxPic[2] = (Picture) boxPic[0].clone();
-
-        //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
+        
         boxPic[0].setPosition(ICONDIM * 2, HEIGHT - 80);
         boxPic[1].setPosition(ICONDIM * 3, HEIGHT - 80);
         boxPic[2].setPosition(ICONDIM * 4, HEIGHT - 80);
@@ -101,60 +97,65 @@ public class HudBuilder {
         return hudTextLife;
     }
     
-    public void makeHud() {
-
-        BitmapText hudTextLife = new BitmapText(guiFont, false);
-        hudTextLife.setSize(30);      // font size
-        hudTextLife.setColor(ColorRGBA.Red);
-        hudTextLife.setText("Life:");
-        hudTextLife.setLocalTranslation(0, settings.getHeight(), 0);
-        guiNode.attachChild(hudTextLife);
-
-        BitmapText hudTextBox = new BitmapText(guiFont, false);
-        hudTextBox.setSize(30);      // font size
-        hudTextBox.setColor(ColorRGBA.Red);
-        hudTextBox.setText("Picks:");
-        hudTextBox.setLocalTranslation(0, settings.getHeight() - 40, 0);
-        guiNode.attachChild(hudTextBox);
-
-        hudTextPickActive = new BitmapText(guiFont, false);
+    public BitmapText initHudTextPick() {
+        BitmapText hudTextPick = new BitmapText(guiFont, false);
+        hudTextPick.setSize(30);      // font size
+        hudTextPick.setColor(ColorRGBA.Red);
+        hudTextPick.setText("Picks:");
+        hudTextPick.setLocalTranslation(0, HEIGHT - 40, 0);
+        
+        return hudTextPick;
+    }
+    
+    public BitmapText initHudTextPickActive() {
+        BitmapText hudTextPickActive = new BitmapText(guiFont, false);
         hudTextPickActive.setSize(30);      // font size
         hudTextPickActive.setColor(ColorRGBA.Red);
         hudTextPickActive.setText("Pick Mode Active");
-        hudTextPickActive.setLocalTranslation(settings.getWidth() - 240, settings.getHeight() - 40, 0);
-        //guiNode.attachChild(hudTextPickActive);
-
+        hudTextPickActive.setLocalTranslation(WIDTH - 240, HEIGHT - 40, 0);
+        
+        return hudTextPickActive;
+    }
+    
+    public BitmapText initHudTextInstruct() {
         BitmapText hudTextInstruct = new BitmapText(guiFont, false);
         hudTextInstruct.setSize(30);      // font size
         hudTextInstruct.setColor(ColorRGBA.Red);
         hudTextInstruct.setText("Press \" i \" for instructions");
-        hudTextInstruct.setLocalTranslation(settings.getWidth() - 330, 0 + 50, 0);
-        guiNode.attachChild(hudTextInstruct);
-
-        hudText = new BitmapText(guiFont, false);
-        hudText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+        hudTextInstruct.setLocalTranslation(WIDTH - 330, 0 + 50, 0);
+        
+        return hudTextInstruct;
+    }
+    
+    public BitmapText initHudTextScore() {
+        BitmapText hudText = new BitmapText(guiFont, false);
+        hudText.setSize(guiFont.getCharSet().getRenderedSize());
         hudText.setSize(20);
-        hudText.setColor(ColorRGBA.Red);                             // font color
-        //hudText.setText("Current Score: "+score);             // the text
-        hudText.setText("Current Score: " + String.format("%.2f", score));
-        //hudText.setLocalTranslation(300, hudText.getLineHeight(), 0); // position
-        hudText.setLocalTranslation(0, settings.getHeight() - 120, 0); // position
-        guiNode.attachChild(hudText);
-
-        finalScoreText = new BitmapText(guiFont, false);
+        hudText.setColor(ColorRGBA.Red);
+        hudText.setText("Current Score: " + String.format("%.2f", 0.0f));
+        hudText.setLocalTranslation(0, HEIGHT - 120, 0);
+        
+        return hudText;
+    }
+    
+    public BitmapText initFinalScoreText() {
+        BitmapText finalScoreText = new BitmapText(guiFont, false);
         finalScoreText.setSize(24);
         finalScoreText.setColor(ColorRGBA.Red);
-        finalScoreText.setText("Last Score: " + String.format("%.2f", lastScore));
-        finalScoreText.setLocalTranslation(settings.getWidth() - 220, settings.getHeight(), 0);
-        guiNode.attachChild(finalScoreText);
-
-        instructions = new Picture("Instructions");
+        finalScoreText.setText("Last Score: " + String.format("%.2f", 0.0f));
+        finalScoreText.setLocalTranslation(WIDTH - 220, HEIGHT, 0);
+        
+        return finalScoreText;
+    }
+    
+    public Picture initInstructions() {        
+        Picture instructions = new Picture("Instructions");
         instructions.setImage(assetManager, "Textures/instructions.png", true);
-        instructions.setWidth(width * 2);
-        instructions.setHeight(height * 2);
-        //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
-        instructions.setPosition(settings.getWidth() / 2 - (width), settings.getHeight() / 2 - (height));
-        //guiNode.attachChild(instructions);
+        instructions.setWidth(WIDTH/3 * 2);
+        instructions.setHeight(HEIGHT/3 * 2);
+        instructions.setPosition(WIDTH / 2 - (WIDTH/3), HEIGHT / 2 - (HEIGHT/3));
+        
+        return instructions;
     }
     
 }

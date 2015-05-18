@@ -665,124 +665,26 @@ public class Main extends SimpleApplication {
         heartPic = hudBuilder.initHeartPics();
         pauseText = hudBuilder.initPauseText();
         boxPic = hudBuilder.initBoxText();
+        BitmapText hudTextLife = hudBuilder.initHudTextLife();
+        BitmapText hudTextPick = hudBuilder.initHudTextPick();
+        hudTextPickActive = hudBuilder.initHudTextPickActive();
+        BitmapText hudTextInstruct = hudBuilder.initHudTextInstruct();
+        hudText = hudBuilder.initHudTextScore();
+        finalScoreText = hudBuilder.initFinalScoreText();
+        instructions = hudBuilder.initInstructions();
         
-        /*
-        int width = settings.getWidth() / 3;
-        int height = settings.getHeight() / 3;
-        Picture hudPic = new Picture("Background");
-        hudPic.setImage(assetManager, "Textures/black2.png", true);
-        hudPic.setWidth(width);
-        hudPic.setHeight(height);
-        //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
-        hudPic.setPosition(0, settings.getHeight() - height);
         guiNode.attachChild(hudPic);
-
-        int heartWidth = 40;
-        int heartHeight = 40;
-        //Picture[] heartPic = new Picture[4];
-        heartPic = new Picture[3];
-        heartPic[0] = new Picture("Heart");
-        heartPic[0].setImage(assetManager, "Textures/heart2.png", true);
-        heartPic[0].setWidth(heartWidth);
-        heartPic[0].setHeight(heartHeight);
-        heartPic[1] = (Picture) heartPic[0].clone();
-        heartPic[2] = (Picture) heartPic[0].clone();
-
-        //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
-        heartPic[0].setPosition(heartWidth * 2, settings.getHeight() - 40);
-        heartPic[1].setPosition(heartWidth * 3, settings.getHeight() - 40);
-        heartPic[2].setPosition(heartWidth * 4, settings.getHeight() - 40);
-        */
-        guiNode.attachChild(hudPic);
-        
         guiNode.attachChild(heartPic[0]);
         guiNode.attachChild(heartPic[1]);
         guiNode.attachChild(heartPic[2]);
-        
-        int heartWidth = 40;
-        int heartHeight = 40;
-        int width = settings.getWidth() / 3;
-        int height = settings.getHeight() / 3;
-
-        /*
-        pauseText = new BitmapText(guiFont, false);
-        pauseText.setSize(30);      // font size
-        pauseText.setColor(ColorRGBA.Red);
-        pauseText.setText("PAUSED");
-        pauseText.setLocalTranslation(0, settings.getHeight() - 80, 0);
-        //guiNode.attachChild(pauseText);
-
-        boxPic = new Picture[3];
-        boxPic[0] = new Picture("BoxPic");
-        boxPic[0].setImage(assetManager, "Textures/box2.png", true);
-        boxPic[0].setWidth(heartWidth);
-        boxPic[0].setHeight(heartHeight);
-        boxPic[1] = (Picture) boxPic[0].clone();
-        boxPic[2] = (Picture) boxPic[0].clone();
-
-        //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
-        boxPic[0].setPosition(heartWidth * 2, settings.getHeight() - 80);
-        boxPic[1].setPosition(heartWidth * 3, settings.getHeight() - 80);
-        boxPic[2].setPosition(heartWidth * 4, settings.getHeight() - 80);
-        */
-        
         guiNode.attachChild(boxPic[0]);
         guiNode.attachChild(boxPic[1]);
         guiNode.attachChild(boxPic[2]);
-
-
-        BitmapText hudTextLife = new BitmapText(guiFont, false);
-        hudTextLife.setSize(30);      // font size
-        hudTextLife.setColor(ColorRGBA.Red);
-        hudTextLife.setText("Life:");
-        hudTextLife.setLocalTranslation(0, settings.getHeight(), 0);
         guiNode.attachChild(hudTextLife);
-
-        BitmapText hudTextBox = new BitmapText(guiFont, false);
-        hudTextBox.setSize(30);      // font size
-        hudTextBox.setColor(ColorRGBA.Red);
-        hudTextBox.setText("Picks:");
-        hudTextBox.setLocalTranslation(0, settings.getHeight() - 40, 0);
-        guiNode.attachChild(hudTextBox);
-
-        hudTextPickActive = new BitmapText(guiFont, false);
-        hudTextPickActive.setSize(30);      // font size
-        hudTextPickActive.setColor(ColorRGBA.Red);
-        hudTextPickActive.setText("Pick Mode Active");
-        hudTextPickActive.setLocalTranslation(settings.getWidth() - 240, settings.getHeight() - 40, 0);
-        //guiNode.attachChild(hudTextPickActive);
-
-        BitmapText hudTextInstruct = new BitmapText(guiFont, false);
-        hudTextInstruct.setSize(30);      // font size
-        hudTextInstruct.setColor(ColorRGBA.Red);
-        hudTextInstruct.setText("Press \" i \" for instructions");
-        hudTextInstruct.setLocalTranslation(settings.getWidth() - 330, 0 + 50, 0);
+        guiNode.attachChild(hudTextPick);         
         guiNode.attachChild(hudTextInstruct);
-
-        hudText = new BitmapText(guiFont, false);
-        hudText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
-        hudText.setSize(20);
-        hudText.setColor(ColorRGBA.Red);                             // font color
-        //hudText.setText("Current Score: "+score);             // the text
-        hudText.setText("Current Score: " + String.format("%.2f", score));
-        //hudText.setLocalTranslation(300, hudText.getLineHeight(), 0); // position
-        hudText.setLocalTranslation(0, settings.getHeight() - 120, 0); // position
         guiNode.attachChild(hudText);
-
-        finalScoreText = new BitmapText(guiFont, false);
-        finalScoreText.setSize(24);
-        finalScoreText.setColor(ColorRGBA.Red);
-        finalScoreText.setText("Last Score: " + String.format("%.2f", lastScore));
-        finalScoreText.setLocalTranslation(settings.getWidth() - 220, settings.getHeight(), 0);
-        guiNode.attachChild(finalScoreText);
-
-        instructions = new Picture("Instructions");
-        instructions.setImage(assetManager, "Textures/instructions.png", true);
-        instructions.setWidth(width * 2);
-        instructions.setHeight(height * 2);
-        //hudPic.setPosition(settings.getWidth() / 4, settings.getHeight() / 4);
-        instructions.setPosition(settings.getWidth() / 2 - (width), settings.getHeight() / 2 - (height));
-        //guiNode.attachChild(instructions);
+        guiNode.attachChild(finalScoreText);    
     }
 
     public void interpolate() {
