@@ -57,10 +57,10 @@ public class TextureSkel extends SimpleApplication {
         //makeTransparent();
         
         // Load a coffee model
-        //loadModel();
+        loadModel();
         
         // Change colors of model
-        loadColoredModel();
+        //loadColoredModel();
         
         // Createa a background
         makeBackground();
@@ -213,12 +213,12 @@ public class TextureSkel extends SimpleApplication {
         Material mat = new Material(assetManager,
                 "Common/MatDefs/Misc/Unshaded.j3md");
         
-        Texture texture = assetManager.loadTexture("Textures/abs1.png");
+        Texture texture = assetManager.loadTexture("Textures/wall3.png");
         // Set mode to repeat, so only the fractional part is considered when we move the texture
         // coordinates.
         texture.setWrap(Texture.WrapMode.Repeat);
         mat.setTexture("ColorMap",
-                assetManager.loadTexture("Textures/abs1.png"));
+                assetManager.loadTexture("Textures/wall3.png"));
         mat.getAdditionalRenderState().
                             setFaceCullMode(RenderState.FaceCullMode.Off);
         

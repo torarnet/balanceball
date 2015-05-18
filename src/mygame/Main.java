@@ -315,13 +315,13 @@ public class Main extends SimpleApplication {
                     gameOver();
                 }
                 if (name.equals("Medium") && isPressed) {
-                    initVars(20,6);
+                    initVars(14,6);
                     initGrid();
                     resetAll();
                     gameOver();
                 }
                 if (name.equals("Hard") && isPressed) {
-                    initVars(26,6);
+                    initVars(20,6);
                     initGrid();
                     resetAll();
                     gameOver();
