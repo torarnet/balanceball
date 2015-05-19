@@ -252,6 +252,71 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(boardNode);
     }
 
+    // Makes the grid for boxes and goal
+    public void makeBoxGrid() {
+        boxes = null;
+        boxes = new Geometry[maxSize * maxSize];
+        // Resets everything in CustomMath class
+        custMath.clearBoxVector2();
+        custMath.removeAllTargets();
+        custMath.setActive();
+        custMath.setTarget();
+        custMath.makeGrid();
+        // Get all the vector locations for boxes
+        Vector3f[][] boxLocations2 = custMath.getBoxVector2();
+
+        // detaches the box node to be rearranged
+        if (boardNode.hasChild(boxNode)) {
+            boardNode.detachChild(boxNode);
+            boxNode.detachAllChildren();
+        }
+
+        //Make one box for each loop and add to boxes array
+        int boxCounter = 0;
+        for (int i = 0; i < custMath.getMaxSize(); i++) {
+            for (int j = 0; j < custMath.getMaxSize(); j++) {
+                // if there should be a box
+                if (boxLocations2[i][j] != null) {
+                    //boxes = makeGeom.makeBoxes(16, 0.2f, ColorRGBA.Blue, boxText);
+                    Geometry oneGeom = makeGeom.makeBox(0.2f, ColorRGBA.Blue, boxText);
+                    // Put it where the vector ants it to be
+                    oneGeom.setLocalTranslation(boxLocations2[i][j]);
+                    // Add some custom data. Here it is index of positions
+                    oneGeom.setUserData("PositionX", i);
+                    oneGeom.setUserData("PositionZ", j);
+                    // For use with picking
+                    oneGeom.setUserData("topParent", oneGeom);
+                    // Add to array
+                    boxes[boxCounter] = oneGeom;
+
+                    // Add to node
+                    if (boxes[boxCounter] != null) {
+                        boxNode.attachChild(boxes[boxCounter]);
+                    }
+                    boxCounter++;
+                }
+            }
+        }
+
+        // Move the goal
+        goal.setLocalTranslation(custMath.getTargetCoords());
+        // Reattach to boardNode
+        boardNode.attachChild(boxNode);
+    }
+
+    public void interpolate() {
+        // All interpolators use the same alpha object.
+        // No delay, increase time of 2 seconds, no ramp, at 1 in 1 second,
+        // decrease time of 2 seconds, no ramp.
+        Alpha alpha = new Alpha(0, 2f, 0, 1, 2, 0, 1, 0, 0);
+
+        // Color interpolation from red to blue.
+        ColorInterpolatorControl colorInterp4 =
+                new ColorInterpolatorControl(alpha.clone(), new ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f),
+                new ColorRGBA(0.0f, 0.0f, 1.0f, 1.0f), "Ambient", true, true);
+        goal.addControl(colorInterp4);
+    }
+
     ///////////////////////////////
     ///// Key/Mouse Listeners /////
     ///////////////////////////////
@@ -523,108 +588,10 @@ public class Main extends SimpleApplication {
         // therefore it must be reactivated.
         control.activate();
     }
-    
+
     ///////////////////
     ///// Picking /////
     ///////////////////
-
-    // Makes a simple HUD. Tried with appstates but would then have to redo
-    // the whole application and divide everything into states. 
-    public void makeHud() {
-        hudPic = hudBuilder.initHudPic();
-        heartPic = hudBuilder.initHeartPics();
-        pauseText = hudBuilder.initPauseText();
-        boxPic = hudBuilder.initBoxText();
-        BitmapText hudTextLife = hudBuilder.initHudTextLife();
-        BitmapText hudTextPick = hudBuilder.initHudTextPick();
-        hudTextPickActive = hudBuilder.initHudTextPickActive();
-        BitmapText hudTextInstruct = hudBuilder.initHudTextInstruct();
-        hudText = hudBuilder.initHudTextScore();
-        finalScoreText = hudBuilder.initFinalScoreText();
-        instructions = hudBuilder.initInstructions();
-
-        guiNode.attachChild(hudPic);
-        guiNode.attachChild(heartPic[0]);
-        guiNode.attachChild(heartPic[1]);
-        guiNode.attachChild(heartPic[2]);
-        guiNode.attachChild(boxPic[0]);
-        guiNode.attachChild(boxPic[1]);
-        guiNode.attachChild(boxPic[2]);
-        guiNode.attachChild(hudTextLife);
-        guiNode.attachChild(hudTextPick);
-        guiNode.attachChild(hudTextInstruct);
-        guiNode.attachChild(hudText);
-        guiNode.attachChild(finalScoreText);
-    }
-
-    // Makes the grid for boxes and goal
-    public void makeBoxGrid() {
-        boxes = null;
-        boxes = new Geometry[maxSize * maxSize];
-        // Resets everything in CustomMath class
-        custMath.clearBoxVector2();
-        custMath.removeAllTargets();
-        custMath.setActive();
-        custMath.setTarget();
-        custMath.makeGrid();
-        // Get all the vector locations for boxes
-        Vector3f[][] boxLocations2 = custMath.getBoxVector2();
-
-        // detaches the box node to be rearranged
-        if (boardNode.hasChild(boxNode)) {
-            boardNode.detachChild(boxNode);
-            boxNode.detachAllChildren();
-        }
-
-        //Make one box for each loop and add to boxes array
-        int boxCounter = 0;
-        for (int i = 0; i < custMath.getMaxSize(); i++) {
-            for (int j = 0; j < custMath.getMaxSize(); j++) {
-                // if there should be a box
-                if (boxLocations2[i][j] != null) {
-                    //boxes = makeGeom.makeBoxes(16, 0.2f, ColorRGBA.Blue, boxText);
-                    Geometry oneGeom = makeGeom.makeBox(0.2f, ColorRGBA.Blue, boxText);
-                    // Put it where the vector ants it to be
-                    oneGeom.setLocalTranslation(boxLocations2[i][j]);
-                    // Add some custom data. Here it is index of positions
-                    oneGeom.setUserData("PositionX", i);
-                    oneGeom.setUserData("PositionZ", j);
-                    // For use with picking
-                    oneGeom.setUserData("topParent", oneGeom);
-                    // Add to array
-                    boxes[boxCounter] = oneGeom;
-
-                    //System.out.println(boxCounter);
-
-                    // Add to node
-                    if (boxes[boxCounter] != null) {
-                        boxNode.attachChild(boxes[boxCounter]);
-                    }
-                    boxCounter++;
-                }
-            }
-        }
-
-        // Move the goal
-        goal.setLocalTranslation(custMath.getTargetCoords());
-
-        // Reattach to boardNode
-        boardNode.attachChild(boxNode);
-    }
-
-    public void interpolate() {
-        // All interpolators use the same alpha object.
-        // No delay, increase time of 2 seconds, no ramp, at 1 in 1 second,
-        // decrease time of 2 seconds, no ramp.
-        Alpha alpha = new Alpha(0, 2f, 0, 1, 2, 0, 1, 0, 0);
-
-        // Color interpolation from red to blue.
-        ColorInterpolatorControl colorInterp4 =
-                new ColorInterpolatorControl(alpha.clone(), new ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f),
-                new ColorRGBA(0.0f, 0.0f, 1.0f, 1.0f), "Ambient", true, true);
-        goal.addControl(colorInterp4);
-    }
-
     // Toggles pickmode
     public void pickMode() {
         // If game is not in pause mode
@@ -790,6 +757,41 @@ public class Main extends SimpleApplication {
         }
     }
 
+    ///////////////
+    ///// HUD /////
+    ///////////////
+    // Makes a simple HUD. Tried with appstates but would then have to redo
+    // the whole application and divide everything into states. 
+    public void makeHud() {
+        hudPic = hudBuilder.initHudPic();
+        heartPic = hudBuilder.initHeartPics();
+        pauseText = hudBuilder.initPauseText();
+        boxPic = hudBuilder.initBoxText();
+        BitmapText hudTextLife = hudBuilder.initHudTextLife();
+        BitmapText hudTextPick = hudBuilder.initHudTextPick();
+        hudTextPickActive = hudBuilder.initHudTextPickActive();
+        BitmapText hudTextInstruct = hudBuilder.initHudTextInstruct();
+        hudText = hudBuilder.initHudTextScore();
+        finalScoreText = hudBuilder.initFinalScoreText();
+        instructions = hudBuilder.initInstructions();
+
+        guiNode.attachChild(hudPic);
+        guiNode.attachChild(heartPic[0]);
+        guiNode.attachChild(heartPic[1]);
+        guiNode.attachChild(heartPic[2]);
+        guiNode.attachChild(boxPic[0]);
+        guiNode.attachChild(boxPic[1]);
+        guiNode.attachChild(boxPic[2]);
+        guiNode.attachChild(hudTextLife);
+        guiNode.attachChild(hudTextPick);
+        guiNode.attachChild(hudTextInstruct);
+        guiNode.attachChild(hudText);
+        guiNode.attachChild(finalScoreText);
+    }
+
+    /////////////////
+    ///// Other /////
+    /////////////////
     // Reset all physics
     private void resetAllPhysics() {
         resetBoxPhysics();
