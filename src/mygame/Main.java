@@ -61,6 +61,7 @@ public class Main extends SimpleApplication {
     CustomMesh mesh;
     KeyInput keyInputs;
     CustomMath custMath;
+    HudBuilder hudBuilder;
     // Lights
     AmbientLight ambient;
     DirectionalLight directional;
@@ -129,7 +130,7 @@ public class Main extends SimpleApplication {
         setDisplayFps(false); // to hide the FPS
         setDisplayStatView(false); // to hide the statistics 
 
-        initVars(8,4);
+        initVars(8, 4);
         initClasses();
         initCamera();
         initTextures();
@@ -146,20 +147,16 @@ public class Main extends SimpleApplication {
         setBoxesToPhysics();
         setGoalToPhysics();
         makeHud();
+        interpolate();
 
         boardNode.attachChild(board);
-        //rootNode.attachChild(board);
         rootNode.attachChild(sky);
         rootNode.attachChild(ball);
         rootNode.attachChild(goal);
 
-        interpolate();
-
-        //test();
-
     }
 
-    public void initVars(int i,int j) {
+    public void initVars(int i, int j) {
         amount = i;
         maxSize = j;
         boxes = new Geometry[maxSize * maxSize];
@@ -170,34 +167,26 @@ public class Main extends SimpleApplication {
         lights = new Lights();
         mesh = new CustomMesh();
         keyInputs = new KeyInput(inputManager, keysPressed);
+        hudBuilder = new HudBuilder(assetManager, settings, guiNode,
+                guiFont);
     }
 
     public void initCamera() {
-        //cam.setLocation(new Vector3f(0, 7, -8));
-        //cam.lookAt(new Vector3f(0, 1, 0), Vector3f.UNIT_Y);
         moveCamera();
         flyCam.setEnabled(false);
         inputManager.setCursorVisible(false);
     }
 
     public void moveCamera() {
-        //cam.setRotation(new Quaternion().fromAngleNormalAxis(cameraMove, Vector3f.UNIT_Y));
-        //cam.setLocation(new Vector3f((float)Math.sin(cameraMove),7,-8));
-        //cam.setLocation(new Vector3f((float)Math.cos(cameraMove),7,-8));
-
         float deltaX = (float) Math.cos(cameraMove);
         float deltaZ = (float) Math.sin(cameraMove);
 
-        //cam.setLocation(new Vector3f(deltaX * 6, 7, -6 * deltaZ));
         cam.setLocation(new Vector3f(deltaX * 8, 7, -8 * deltaZ));
-
         cam.lookAt(new Vector3f(0, 1, 0), Vector3f.UNIT_Y);
-
     }
 
     public void initTextures() {
         boardText = assetManager.loadTexture("Textures/board1.jpg");
-        //sphereText = assetManager.loadTexture("Textures/abs1.png");
         sphereText = assetManager.loadTexture("Textures/wall3.png");
         boxText = assetManager.loadTexture("Textures/box2.png");
     }
@@ -205,7 +194,6 @@ public class Main extends SimpleApplication {
     public void initGeom() {
         sky = makeGeom.makeSky(sphereText);
         board = makeGeom.makeBoard(boardText);
-        boxes = makeGeom.makeBoxes(5, 0.2f, ColorRGBA.Blue, null);
         ball = makeGeom.makeBall(RADIUS, ColorRGBA.Red);
         goal = makeGeom.makeGoal(ColorRGBA.Yellow);
         shadowPick = makeGeom.makeBox(0.2f, ColorRGBA.White, null);
@@ -228,10 +216,6 @@ public class Main extends SimpleApplication {
         goal.setLocalScale(0.3f);
     }
 
-    public void doScaling() {
-        goal.setLocalScale(0.3f);
-    }
-
     public void initKeys() {
         keyInputs.mapKeys();
         List<String> keyMappings;
@@ -240,62 +224,21 @@ public class Main extends SimpleApplication {
         // For continuus actions
         analogListener = new AnalogListener() {
             public void onAnalog(String name, float keyPressed, float tpf) {
-                /**
-                 * TODO: test for mapping names and implement actions
-                 */
-                // Does commands based on keymapped names
-                // Increases and decreases x,y,z values if keys are pressed
-                if (name.equals("MoveLeft")) {         // test?
+                if (name.equals("MoveLeft")) {
                     cameraMove -= 3.0f * tpf;
                     moveCamera();
                 }
-                if (name.equals("MoveRight")) {         // test?
+                if (name.equals("MoveRight")) {
                     cameraMove += 3.0f * tpf;
                     moveCamera();
                 }
-                // Move object by calling placeObjAtContactPoint() if mouse moves
-                /*if (name.equals(MouseMoveLeft) || name.equals(MouseMoveRight)
-                 || name.equals(MouseMoveUp) || name.equals(MouseMoveDown)) {
-                 if (hasPickedObject && moveEnabled) {
-                 placeObjAtContactPoint();
-                 }
-                 }*/
-                // Move object by calling placeObjAtContactPoint() if mouse moves
-
-                /*
-                 if (mouseX>0 || mouseY>0
-                 || mouseX<0 || mouseY<0) {
-                 if (hasPickedObject && moveEnabled) {
-                 placeObjAtContactPoint();
-                 }
-                 }*/
-
             }
         };
 
         actionListener = new ActionListener() {
             public void onAction(String name, boolean isPressed, float tpf) {
                 if (name.equals("Reset") && isPressed) {
-
-                    /*
-                     resetAllPhysics();
-                     makeBoxGrid();
-                     reInitiateAllPhysics();
-                     resetLife();
-                     resetPicks();
-                     score = 0;
-                     explosionNode.detachAllChildren();
-                     */
-
                     gameOver();
-                    /*if (guiNode.hasChild(finalScoreText)) {
-                     guiNode.detachChild(finalScoreText);
-                     }*/
-                    //resetScene();
-                    //test();
-                    //resetScene();
-                    //resetBall();
-                    //sphereControl.setPhysicsLocation(new Vector3f(0,3,0.5f));
                 }
                 if (name.equals("Pick") && isPressed) {
                     pickMode();
@@ -310,24 +253,14 @@ public class Main extends SimpleApplication {
                     showInstructions();
                 }
                 if (name.equals("Easy") && isPressed) {
-                    initVars(8,4);
-                    initGrid();
-                    resetAll();
-                    gameOver();
+                    changeDifficulty(8, 4);
                 }
                 if (name.equals("Medium") && isPressed) {
-                    initVars(14,6);
-                    initGrid();
-                    resetAll();
-                    gameOver();
+                    changeDifficulty(14, 6);
                 }
                 if (name.equals("Hard") && isPressed) {
-                    initVars(20,6);
-                    initGrid();
-                    resetAll();
-                    gameOver();
+                    changeDifficulty(20, 6);
                 }
-                // Check if mouse key pressed
                 if (name.equals("PickDown")) {
                     if (isPressed) {
                         pick();
@@ -343,6 +276,29 @@ public class Main extends SimpleApplication {
         addListener(keyMappings);
 
     }
+    
+    private void initMouse() {
+        inputManager.addRawInputListener(new RawInputAdapter() {
+            @Override
+            public void onMouseMotionEvent(MouseMotionEvent mme) {
+                mouseY = (float) mme.getDY();
+                mouseX = (float) mme.getDX();
+                if (mme.getDX() != 0 || mme.getDY() != 0) {
+                    if (hasPickedObject && moveEnabled) {
+                        placeObjAtContactPoint();
+                    }
+                }
+            }
+        });
+
+    }
+
+    private void changeDifficulty(int amount, int grid) {
+        initVars(amount, grid);
+        initGrid();
+        resetAll();
+        gameOver();
+    }
 
     private void resetAll() {
         resetAllPhysics();
@@ -352,9 +308,6 @@ public class Main extends SimpleApplication {
         resetPicks();
         score = 0;
         explosionNode.detachAllChildren();
-        /*if (guiNode.hasChild(finalScoreText)) {
-         guiNode.detachChild(finalScoreText);
-         }*/
     }
 
     private void resetAllPhysics() {
@@ -371,9 +324,6 @@ public class Main extends SimpleApplication {
     public void addListener(List<String> keyMappings) {
         String[] stringArray = new String[keyMappings.size()];
         stringArray = keyMappings.toArray(stringArray);
-
-        //inputManager.addListener(analogListener, new String[]{"MoveLeft","MoveRight",
-        //  "MoveY","MoveY2","MoveZ","MoveZ2"});
 
         inputManager.addListener(actionListener, stringArray);
         inputManager.addListener(analogListener, stringArray);
@@ -407,26 +357,9 @@ public class Main extends SimpleApplication {
                 // movement of the sphere accounts for camera rotation.
                 Vector3f camDir = cam.getDirection().clone();
                 Vector3f camLeft = cam.getLeft();
-                /*
-                 if (keysPressed[com.jme3.input.KeyInput.KEY_LEFT]) {
-                 forceMove.addLocal(camLeft);
-                 }
-                 if (keysPressed[com.jme3.input.KeyInput.KEY_RIGHT]) {
-                 forceMove.subtractLocal(camLeft);
-                 }
-                 if (keysPressed[com.jme3.input.KeyInput.KEY_UP]) {
-                 forceMove.addLocal(camDir);
-                 }
-                 if (keysPressed[com.jme3.input.KeyInput.KEY_DOWN]) {
-                 forceMove.subtractLocal(camDir);
-                 }
-                 * */
-                //forceMove.addLocal(mouseX,0,0);
+
                 forceMove.subtractLocal(camLeft.mult(mouseX));
                 forceMove.addLocal(camDir.mult(mouseY));
-
-                //forceMove.addLocal(mouseX,0,0);
-                //forceMove.subtractLocal(0,0,mouseY);
 
                 forceMove.y = 0;
 
@@ -444,21 +377,7 @@ public class Main extends SimpleApplication {
         });
     }
 
-    private void initMouse() {
-        inputManager.addRawInputListener(new RawInputAdapter() {
-            @Override
-            public void onMouseMotionEvent(MouseMotionEvent mme) {
-                mouseY = (float) mme.getDY();
-                mouseX = (float) mme.getDX();
-                if (mme.getDX() != 0 || mme.getDY() != 0) {
-                    if (hasPickedObject && moveEnabled) {
-                        placeObjAtContactPoint();
-                    }
-                }
-            }
-        });
-
-    }
+    
 
     public void setInitialPhysics() {
         CollisionShape groundCollisionShape = CollisionShapeFactory.createMeshShape(board);
@@ -471,22 +390,6 @@ public class Main extends SimpleApplication {
         sphereControl = new RigidBodyControl(sphereCollisionShape, 3);
         ball.addControl(sphereControl);
         bulletAppState.getPhysicsSpace().add(sphereControl);
-
-        /*
-         CollisionShape goalCollisionShape = new SphereCollisionShape(RADIUS/2);
-         goalControl = new RigidBodyControl(goalCollisionShape, 0);
-         goal.addControl(goalControl);
-         bulletAppState.getPhysicsSpace().add(goalControl);
-        
-         boxControl = new RigidBodyControl[amount];
-         CollisionShape boxCollisionShape = new BoxCollisionShape(new Vector3f(BOXDIMENSION, BOXDIMENSION, BOXDIMENSION));
-         for (int i=0;i<boxControl.length;i++) {
-         boxControl[i] = new RigidBodyControl(boxCollisionShape, 0);
-         boxes[i].addControl(boxControl[i]);
-         bulletAppState.getPhysicsSpace().add(boxControl[i]);
-         }
-         */
-        //bulletAppState.getPhysicsSpace().add(boxControl);
 
         bulletAppState.getPhysicsSpace().addCollisionListener(new PhysicsCollisionListener() {
             public void collision(PhysicsCollisionEvent event) {
@@ -508,9 +411,10 @@ public class Main extends SimpleApplication {
                                 .toString()),
                                 Integer.parseInt(a.getUserData("PositionZ")
                                 .toString()), oneBoxCtrl);
-                        //Geometry explosion = makeGeom.explosionSphere(10, 50);
-                        //explosion.setLocalTranslation(b.getLocalTranslation());
-                        //boxNode.attachChild(explosion);
+
+                        Spatial explosion = a.clone();
+                        explosion.setMaterial(makeGeom.changeMat());
+                        explosionNode.attachChild(explosion);
                     }
                     if (((objectA == sphereControl) && (objectB == oneBoxCtrl))) {
                         removeLife();
@@ -550,10 +454,7 @@ public class Main extends SimpleApplication {
     }
 
     private void resetScene() {
-        for (RigidBodyControl oneBoxCtrl : boxControl) {
-            oneBoxCtrl.setEnabled(false);
-            //resetRigidBodyControl(oneBoxCtrl,new Transform(oneBoxCtrl.getPhysicsLocation(),oneBoxCtrl.getPhysicsRotation(Quaternion.IDENTITY)));
-        }
+        resetBoxPhysics();
         //resetRigidBodyControl(boxControl, boxStartTransform);
         resetRigidBodyControl(sphereControl, sphereStartTransform);
         goalControl.setEnabled(false);
@@ -598,19 +499,16 @@ public class Main extends SimpleApplication {
     public void makeBoxGrid() {
         boxes = null;
         boxes = new Geometry[maxSize * maxSize];
-        //custMath.clearBoxVector();
         custMath.clearBoxVector2();
         custMath.removeAllTargets();
         custMath.setActive();
         custMath.setTarget();
         custMath.makeGrid();
-        //Vector3f[] boxLocations = custMath.getBoxVector();
         Vector3f[][] boxLocations2 = custMath.getBoxVector2();
 
         if (boardNode.hasChild(boxNode)) {
             boardNode.detachChild(boxNode);
             boxNode.detachAllChildren();
-            //boxNode.removeFromParent();
         }
 
         int boxCounter = 0;
@@ -618,7 +516,6 @@ public class Main extends SimpleApplication {
             for (int j = 0; j < custMath.getMaxSize(); j++) {
                 if (boxLocations2[i][j] != null) {
                     //boxes = makeGeom.makeBoxes(16, 0.2f, ColorRGBA.Blue, boxText);
-
                     Geometry oneGeom = makeGeom.makeBox(0.2f, ColorRGBA.Blue, boxText);
                     oneGeom.setLocalTranslation(boxLocations2[i][j]);
                     oneGeom.setUserData("PositionX", i);
@@ -636,11 +533,7 @@ public class Main extends SimpleApplication {
         }
         goal.setLocalTranslation(custMath.getTargetCoords());
 
-
-        //setGeomToPhysics();
-
         boardNode.attachChild(boxNode);
-
     }
 
     public void moveTarget() {
@@ -659,8 +552,6 @@ public class Main extends SimpleApplication {
     }
 
     public void makeHud() {
-        HudBuilder hudBuilder = new HudBuilder(assetManager,settings,guiNode,
-                guiFont);
         hudPic = hudBuilder.initHudPic();
         heartPic = hudBuilder.initHeartPics();
         pauseText = hudBuilder.initPauseText();
@@ -672,7 +563,7 @@ public class Main extends SimpleApplication {
         hudText = hudBuilder.initHudTextScore();
         finalScoreText = hudBuilder.initFinalScoreText();
         instructions = hudBuilder.initInstructions();
-        
+
         guiNode.attachChild(hudPic);
         guiNode.attachChild(heartPic[0]);
         guiNode.attachChild(heartPic[1]);
@@ -681,10 +572,10 @@ public class Main extends SimpleApplication {
         guiNode.attachChild(boxPic[1]);
         guiNode.attachChild(boxPic[2]);
         guiNode.attachChild(hudTextLife);
-        guiNode.attachChild(hudTextPick);         
+        guiNode.attachChild(hudTextPick);
         guiNode.attachChild(hudTextInstruct);
         guiNode.attachChild(hudText);
-        guiNode.attachChild(finalScoreText);    
+        guiNode.attachChild(finalScoreText);
     }
 
     public void interpolate() {
@@ -706,11 +597,7 @@ public class Main extends SimpleApplication {
             pickMode = !pickMode;
             inputManager.setCursorVisible(pickMode);
             // All the objects that are pickable are added to this node.
-            pickables = new Node("pickables");
-            //pickables.attachChild(boxNode);
-            //pickables.attachChild(boxNode);
-            //rootNode.attachChild(pickables);
-            //shadowPick = makeGeom.makeBox(0.2f, ColorRGBA.White, null);
+            //pickables = new Node("pickables");
             if (!pickMode) {
                 shadowPick.removeFromParent();
             }
@@ -724,7 +611,7 @@ public class Main extends SimpleApplication {
         }
     }
 
-    private CollisionResult pickIfAny() {
+    public CollisionResult pickIfAny() {
         // Collision result holds the results from a pick operation.
         CollisionResults results = new CollisionResults();
 
@@ -778,7 +665,7 @@ public class Main extends SimpleApplication {
                 pickedObject.getControl(RigidBodyControl.class).setEnabled(false);
             } catch (Exception e) {
                 // No Physics found
-            };
+            }
 
             if (pickedObject == null) {
                 hasPickedObject = false;
@@ -794,9 +681,9 @@ public class Main extends SimpleApplication {
                     Integer.parseInt(pickedObject.getUserData("PositionZ")
                     .toString()));
             rootNode.attachChild(pickedObject);
-            System.out.println("picked " + pickedObject.getName());
+            //System.out.println("picked " + pickedObject.getName());
         } else {
-            System.out.println("picked nothing");
+            //System.out.println("picked nothing");
         }
     }
 
@@ -807,23 +694,20 @@ public class Main extends SimpleApplication {
             return;
         }
         // Puts the geometry back in the pickable node for further picking
-        System.out.println("released " + pickedObject.getName());
+        //System.out.println("released " + pickedObject.getName());
         pickedObject.removeFromParent();
         boxNode.attachChild(pickedObject);
         Vector3f newPlace = custMath.adjustPos(pickedObject.getLocalTranslation());
         //if (!custMath.isElmTaken(pickedObject.getLocalTranslation())) {
         if (!custMath.isElmTaken(newPlace)) {
-
             pickedObject.setLocalTranslation(custMath.adjustPos(newPlace));
             //pickedObject.setLocalTranslation(custMath.adjustPos(pickedObject.getLocalTranslation()));
             custMath.addBoxAt(0, 0, pickedObject.getLocalTranslation());
             shadowPick.removeFromParent();
             removeOnePick();
-
         } else {
             pickedObject.setLocalTranslation(lastPlace);
         }
-
         try {
             pickedObject.getControl(RigidBodyControl.class).setEnabled(true);
         } catch (Exception e) {
