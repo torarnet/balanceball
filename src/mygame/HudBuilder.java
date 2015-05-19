@@ -13,7 +13,8 @@ import com.jme3.system.AppSettings;
 import com.jme3.ui.Picture;
 
 /**
- *
+ * Create a HUD Display using the guiNode
+ * 
  * @author Tor Arne
  */
 public class HudBuilder {
@@ -25,6 +26,7 @@ public class HudBuilder {
     Node guiNode;
     BitmapFont guiFont;
     
+    // Gets all dependencies
     public HudBuilder(AssetManager assetManager,AppSettings settings,
             Node guiNode,BitmapFont guiFont) {
         WIDTH = settings.getWidth();
@@ -34,6 +36,7 @@ public class HudBuilder {
         this.guiFont=guiFont;
     }
     
+    // Background image
     public Picture initHudPic() {
         Picture hudPic = new Picture("Background");
         hudPic.setImage(assetManager, "Textures/black2.png", true);
@@ -44,6 +47,7 @@ public class HudBuilder {
         return hudPic;
     }
     
+    // Heart Picture images, 3 of them
     public Picture[] initHeartPics() {
         Picture[] heartPic = new Picture[3];
         heartPic[0] = new Picture("Heart");
@@ -61,6 +65,7 @@ public class HudBuilder {
         
     }
     
+    // Pause text
     public BitmapText initPauseText() {
         BitmapText pauseText = new BitmapText(guiFont, false);
         pauseText.setSize(30);      // font size
@@ -71,6 +76,7 @@ public class HudBuilder {
         return pauseText;
     }
     
+    // Pictures of boxes for picking. Has 3 of them
     public Picture[] initBoxText() {
         Picture[] boxPic = new Picture[3];
         boxPic[0] = new Picture("BoxPic");
@@ -87,6 +93,7 @@ public class HudBuilder {
         return boxPic;
     } 
     
+    // Life text
     public BitmapText initHudTextLife() {
         BitmapText hudTextLife = new BitmapText(guiFont, false);
         hudTextLife.setSize(30);      // font size
@@ -97,6 +104,7 @@ public class HudBuilder {
         return hudTextLife;
     }
     
+    // Picks text
     public BitmapText initHudTextPick() {
         BitmapText hudTextPick = new BitmapText(guiFont, false);
         hudTextPick.setSize(30);      // font size
@@ -107,6 +115,7 @@ public class HudBuilder {
         return hudTextPick;
     }
     
+    // Show if pick mode is active
     public BitmapText initHudTextPickActive() {
         BitmapText hudTextPickActive = new BitmapText(guiFont, false);
         hudTextPickActive.setSize(30);      // font size
@@ -117,6 +126,7 @@ public class HudBuilder {
         return hudTextPickActive;
     }
     
+    // Show instruction text 
     public BitmapText initHudTextInstruct() {
         BitmapText hudTextInstruct = new BitmapText(guiFont, false);
         hudTextInstruct.setSize(30);      // font size
@@ -127,6 +137,7 @@ public class HudBuilder {
         return hudTextInstruct;
     }
     
+    // Show current score
     public BitmapText initHudTextScore() {
         BitmapText hudText = new BitmapText(guiFont, false);
         hudText.setSize(guiFont.getCharSet().getRenderedSize());
@@ -138,6 +149,7 @@ public class HudBuilder {
         return hudText;
     }
     
+    // Show final score
     public BitmapText initFinalScoreText() {
         BitmapText finalScoreText = new BitmapText(guiFont, false);
         finalScoreText.setSize(24);
@@ -148,6 +160,7 @@ public class HudBuilder {
         return finalScoreText;
     }
     
+    // Show instruction picture, where all instructions are given
     public Picture initInstructions() {        
         Picture instructions = new Picture("Instructions");
         instructions.setImage(assetManager, "Textures/instructions.png", true);
